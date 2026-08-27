@@ -73,6 +73,18 @@ initializeVariableColors(variableDefinitions);
  * check your .env file and set VITE_SHOW_EXAMPLES=false.
  */
 
+import { whereElectronsLiveBlocks } from "./sections/WhereElectronsLive";
+import { shellsBlocks } from "./sections/Shells";
+import { subshellsBlocks } from "./sections/Subshells";
+import { orbitalsBlocks } from "./sections/Orbitals";
+import { fillingOrderBlocks } from "./sections/FillingOrder";
+import { writingConfigurationsBlocks } from "./sections/WritingConfigurations";
+
 export const blocks: ReactElement[] = [
-    // Start adding your blocks here!
+    ...whereElectronsLiveBlocks,
+    ...shellsBlocks,
+    ...subshellsBlocks,
+    ...orbitalsBlocks,
+    ...fillingOrderBlocks,
+    ...writingConfigurationsBlocks,
 ];

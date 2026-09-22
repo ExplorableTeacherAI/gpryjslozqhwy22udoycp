@@ -21,8 +21,8 @@
     "shells-capacity-question",
     "subshells-heading",
     "subshells-definition",
-    "subshells-floors",
     "subshells-count-rule",
+    "subshells-floors",
     "subshells-naming",
     "subshells-table",
     "subshells-question",
@@ -271,11 +271,11 @@
       }
     },
     {
-      "id": "layout-subshells-floors",
+      "id": "editor-full-subshells-count-rule",
       "type": "stack",
       "columns": [
         [
-          "subshells-floors"
+          "subshells-count-rule"
         ]
       ],
       "props": {
@@ -283,11 +283,11 @@
       }
     },
     {
-      "id": "layout-subshells-count-rule",
+      "id": "layout-subshells-floors",
       "type": "stack",
       "columns": [
         [
-          "subshells-count-rule"
+          "subshells-floors"
         ]
       ],
       "props": {

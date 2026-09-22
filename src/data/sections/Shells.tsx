@@ -20,16 +20,17 @@ import {
     linkedHighlightPropsFromDefinition,
     numberPropsFromDefinition,
 } from "../variables";
-import { ACCENT, INK, INK_SOFT, INK_FAINT, fillShellsSimple, shellCapacity } from "./electronModel";
+import { INK, INK_SOFT, INK_FAINT, fillShellsSimple, shellCapacity, shellColor, shellColorSoft } from "./electronModel";
 import { StepButton } from "./electronFigureParts";
 
 // ── Shell picture ───────────────────────────────────────────────────────────
 const VIEW = { width: 560, height: 360 };
-const CENTER = { x: 250, y: 180 };
+const CENTER = { x: 230, y: 180 };
 const SHELL_RADII = [46, 88, 134];
 const SHELL_COUNT = SHELL_RADII.length;
 const MAX_SIMPLE = SHELL_RADII.reduce((sum, _r, index) => sum + shellCapacity(index + 1), 0); // 28
 const ELECTRON_RADIUS = 6;
+const LABEL_X = 420;
 
 const shellId = (n: number) => `shell-${n}`;
 
@@ -43,6 +44,8 @@ function ShellRing({ n, electrons, newestIndex }: { n: number; electrons: number
     const pop = useSpring(isTarget ? 1 : 0, { stiffness: 300, damping: 24 });
     const opacity = highlight && !isTarget ? 0.38 : 1;
     const full = electrons === capacity;
+    const color = shellColor(n);
+    const labelY = 64 + (SHELL_COUNT - n) * 30; // one label row per ring, outermost on top
 
     return (
         <g
@@ -57,7 +60,7 @@ function ShellRing({ n, electrons, newestIndex }: { n: number; electrons: number
                 cy={CENTER.y}
                 r={radius}
                 fill="none"
-                stroke={INK}
+                stroke={color}
                 strokeWidth={2 + pop * 6}
                 strokeOpacity={0.28 * pop}
             />
@@ -66,8 +69,8 @@ function ShellRing({ n, electrons, newestIndex }: { n: number; electrons: number
                 cy={CENTER.y}
                 r={radius}
                 fill="none"
-                stroke={full ? ACCENT : INK_SOFT}
-                strokeWidth={(full ? 2 : 1.5) + pop * 1.5}
+                stroke={color}
+                strokeWidth={(full ? 2.5 : 1.5) + pop * 1.5}
                 strokeDasharray={full ? undefined : "3 5"}
                 strokeLinecap="round"
             />
@@ -80,28 +83,29 @@ function ShellRing({ n, electrons, newestIndex }: { n: number; electrons: number
                         cx={CENTER.x + radius * Math.cos(angle)}
                         cy={CENTER.y + radius * Math.sin(angle)}
                         r={isNewest ? ELECTRON_RADIUS + 2 : ELECTRON_RADIUS}
-                        fill={ACCENT}
+                        fill={color}
                         stroke={isNewest ? INK : "none"}
                         strokeWidth={isNewest ? 1.5 : 0}
                     />
                 );
             })}
-            {/* Direct label at the ring's 45° point: one row per ring, no overlap */}
+            {/* Label column on the right, one row per ring, leader to the ring's 45° point */}
             <line
                 x1={CENTER.x + radius * Math.SQRT1_2 + 4}
                 y1={CENTER.y - radius * Math.SQRT1_2 - 4}
-                x2={CENTER.x + radius * Math.SQRT1_2 + 24}
-                y2={CENTER.y - radius * Math.SQRT1_2 - 24}
-                stroke={INK_SOFT}
+                x2={LABEL_X - 8}
+                y2={labelY - 4}
+                stroke={color}
                 strokeWidth="1.5"
                 strokeLinecap="round"
+                strokeOpacity="0.7"
             />
             <text
-                x={CENTER.x + radius * Math.SQRT1_2 + 28}
-                y={CENTER.y - radius * Math.SQRT1_2 - 24}
+                x={LABEL_X}
+                y={labelY}
                 fontSize="12"
-                fill={INK}
-                fontWeight={isTarget ? 600 : 400}
+                fill={color}
+                fontWeight={isTarget ? 700 : 600}
                 style={{ fontVariantNumeric: "tabular-nums" }}
             >
                 {`shell ${n}: ${electrons} of ${capacity}`}
@@ -191,7 +195,7 @@ function ShellCountReadout({ n }: { n: number }) {
     const count = useVar<number>("shellElectronCount", 11);
     const electrons = fillShellsSimple(count, SHELL_COUNT)[n - 1];
     return (
-        <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600, color: INK }}>
+        <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, color: shellColor(n) }}>
             {electrons}
         </span>
     );
@@ -250,6 +254,8 @@ export const shellsBlocks: ReactElement[] = [
                     varName="shellHighlight"
                     highlightId="shell-1"
                     {...linkedHighlightPropsFromDefinition(getVariableInfo("shellHighlight"))}
+                    color={shellColor(1)}
+                    bgColor={shellColorSoft(1)}
                 >
                     shell 1
                 </InlineLinkedHighlight>{" "}
@@ -260,6 +266,8 @@ export const shellsBlocks: ReactElement[] = [
                     highlightId="shell-2"
                     showHint={false}
                     {...linkedHighlightPropsFromDefinition(getVariableInfo("shellHighlight"))}
+                    color={shellColor(2)}
+                    bgColor={shellColorSoft(2)}
                 >
                     shell 2
                 </InlineLinkedHighlight>{" "}
@@ -270,6 +278,8 @@ export const shellsBlocks: ReactElement[] = [
                     highlightId="shell-3"
                     showHint={false}
                     {...linkedHighlightPropsFromDefinition(getVariableInfo("shellHighlight"))}
+                    color={shellColor(3)}
+                    bgColor={shellColorSoft(3)}
                 >
                     shell 3
                 </InlineLinkedHighlight>{" "}

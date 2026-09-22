@@ -149,3 +149,12 @@ export const INK_FAINT = "#CBD5E1";
 export const PAPER_TINT = "#F1F5F9";
 export const ACCENT = "#62D0AD";
 export const ACCENT_SOFT = "rgba(98, 208, 173, 0.18)";
+
+/** One colour per shell, used wherever a shell is named: rings, electrons, labels, prose. */
+export const SHELL_COLORS = ["#62D0AD", "#8E90F5", "#F7B23B", "#AC8BF9"];
+export const shellColor = (n: number): string => SHELL_COLORS[(n - 1) % SHELL_COLORS.length];
+export const shellColorSoft = (n: number): string => {
+    const hex = shellColor(n);
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return `rgba(${r}, ${g}, ${b}, 0.18)`;
+};

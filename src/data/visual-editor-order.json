@@ -32,7 +32,6 @@
     "orbitals-two-electrons",
     "orbitals-boxes",
     "orbitals-counting",
-    "orbitals-table",
     "orbitals-shell-check",
     "orbitals-question",
     "filling-order-heading",
@@ -375,18 +374,6 @@
       "columns": [
         [
           "orbitals-counting"
-        ]
-      ],
-      "props": {
-        "maxWidth": "xl"
-      }
-    },
-    {
-      "id": "layout-orbitals-table",
-      "type": "stack",
-      "columns": [
-        [
-          "orbitals-table"
         ]
       ],
       "props": {

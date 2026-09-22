@@ -381,26 +381,6 @@ export const orbitalsBlocks: ReactElement[] = [
         </Block>
     </StackLayout>,
 
-    <StackLayout key="layout-orbitals-table" maxWidth="xl">
-        <Block id="orbitals-table" padding="sm">
-            <Table
-                columns={[
-                    { header: "Subshell", align: "center", width: 110 },
-                    { header: "Orbitals", align: "center", width: 110 },
-                    { header: "Electrons it holds", align: "center", width: 160 },
-                    { header: "Shape of each orbital", align: "left" },
-                ]}
-                rows={[
-                    { cells: ["s", "1", "2", "A sphere around the nucleus"] },
-                    { cells: ["p", "3", "6", "Three dumbbells at right angles"] },
-                    { cells: ["d", "5", "10", "Five more complicated cloverleaf shapes"] },
-                ]}
-                color="#6366f1"
-                caption="Two electrons per orbital gives every subshell its capacity."
-            />
-        </Block>
-    </StackLayout>,
-
     <StackLayout key="layout-orbitals-shell-check" maxWidth="xl">
         <Block id="orbitals-shell-check" padding="sm">
             <EditableParagraph id="para-orbitals-shell-check" blockId="orbitals-shell-check">

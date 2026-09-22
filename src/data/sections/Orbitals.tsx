@@ -11,7 +11,7 @@ import {
     InlineToggle,
     InteractionHintSequence,
 } from "@/components/atoms";
-import { Figure } from "@/components/molecules";
+import { Figure, FormulaBlock } from "@/components/molecules";
 import { useVar, useSetVar } from "@/stores";
 import { useSpring } from "@/lib/motion";
 import {
@@ -251,6 +251,21 @@ function RoomToggle() {
     );
 }
 
+/** The capacity rule as a formula, live for whichever room is selected. */
+function RoomCapacityFormula() {
+    const room = asRoom(useVar<string>("orbitalRoom", "p"));
+    const desks = ORBITALS_PER_ROOM[room];
+    // Colour keys are per family (roomS/roomP/roomD): the formula colour
+    // registry is shared, so one generic key would stick to a single colour.
+    const key = `room${room.toUpperCase()}`;
+    return (
+        <FormulaBlock
+            latex={`\\text{electrons a room holds} = 2 \\times \\text{desks} \\qquad \\text{so the } \\clr{${key}}{${room}} \\text{ room holds } 2 \\times \\clr{${key}}{${desks}} = \\clr{${key}}{${roomCapacity(room)}}`}
+            colorMap={{ [key]: roomColor(room) }}
+        />
+    );
+}
+
 function RoomDesksReadout() {
     const room = asRoom(useVar<string>("orbitalRoom", "p"));
     const desks = ORBITALS_PER_ROOM[room];
@@ -390,6 +405,12 @@ export const orbitalsBlocks: ReactElement[] = [
                 room <RoomDesksReadout />. Multiply the number of desks by two and you get how
                 many electrons the room holds.
             </EditableParagraph>
+        </Block>
+    </StackLayout>,
+
+    <StackLayout key="layout-orbitals-capacity-formula" maxWidth="xl">
+        <Block id="orbitals-capacity-formula" padding="lg">
+            <RoomCapacityFormula />
         </Block>
     </StackLayout>,
 

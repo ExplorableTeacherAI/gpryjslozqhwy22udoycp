@@ -8,12 +8,14 @@ import {
     InlineClozeInput,
     InlineFeedback,
     InlineScrubbleNumber,
+    InlineToggle,
+    InlineTrigger,
     InteractionHintSequence,
 } from "@/components/atoms";
 import { FormulaBlock, Figure, FigureSlider } from "@/components/molecules";
 import { useVar, useSetVar } from "@/stores";
 import { clamp, useSpring } from "@/lib/motion";
-import { getVariableInfo, clozePropsFromDefinition, numberPropsFromDefinition } from "../variables";
+import { getVariableInfo, clozePropsFromDefinition, numberPropsFromDefinition, togglePropsFromDefinition } from "../variables";
 import {
     ACCENT,
     INK,
@@ -291,6 +293,88 @@ function ConfigurationBuilderFigure() {
     );
 }
 
+// ── Worked example: any of a few elements, walked through from the model ──
+const WORKED_ELEMENTS: Record<string, number> = { sulfur: 16, oxygen: 8, sodium: 11, chlorine: 17, calcium: 20, iron: 26 };
+const WORKED_OPTIONS = Object.keys(WORKED_ELEMENTS);
+const workedAtomicNumber = (name: string) => WORKED_ELEMENTS[name] ?? 16;
+
+function useWorkedElement() {
+    const name = useVar<string>("workedElement", "sulfur");
+    const atomicNumber = workedAtomicNumber(name);
+    return { name: WORKED_OPTIONS.includes(name) ? name : "sulfur", atomicNumber, element: elementFor(atomicNumber) };
+}
+
+function WorkedElementToggle() {
+    return (
+        <InlineToggle
+            id="toggle-writing-configurations-worked-element"
+            varName="workedElement"
+            options={WORKED_OPTIONS}
+            {...togglePropsFromDefinition(getVariableInfo("workedElement"))}
+        />
+    );
+}
+
+function WorkedElectronCount() {
+    const { atomicNumber } = useWorkedElement();
+    return <span style={{ fontWeight: 600, color: INK, fontVariantNumeric: "tabular-nums" }}>{atomicNumber}</span>;
+}
+
+/** "Put 2 into 1s (14 left), 2 into 2s (12 left), … and the last 4 go into 3p, which could have taken 6." */
+function WorkedHandOut() {
+    const { atomicNumber } = useWorkedElement();
+    const steps = fillSubshells(atomicNumber).filter((o) => o.electrons > 0);
+    let remaining = atomicNumber;
+    return (
+        <span style={{ fontVariantNumeric: "tabular-nums" }}>
+            {steps.map((o, index) => {
+                remaining -= o.electrons;
+                const isLast = index === steps.length - 1;
+                const name = <span style={{ fontWeight: 600, color: roomColor(o.subshell.room) }}>{o.subshell.key}</span>;
+                if (!isLast) {
+                    return (
+                        <span key={o.subshell.key}>
+                            {index === 0 ? "Put " : ", "}
+                            {o.electrons} into {name} ({remaining} left)
+                        </span>
+                    );
+                }
+                const full = o.electrons === o.subshell.capacity;
+                return (
+                    <span key={o.subshell.key}>
+                        {steps.length === 1 ? "Put " : ", and the last "}
+                        {o.electrons} {steps.length === 1 ? "into" : o.electrons === 1 ? "goes into" : "go into"} {name}
+                        {full ? ", filling it exactly" : `, which could have taken ${o.subshell.capacity}`}
+                    </span>
+                );
+            })}
+        </span>
+    );
+}
+
+function WorkedConfigurationFormula() {
+    const { atomicNumber, element } = useWorkedElement();
+    const terms = fillSubshells(atomicNumber)
+        .filter((o) => o.electrons > 0)
+        .map((o) => `\\clr{room${o.subshell.room.toUpperCase()}}{${o.subshell.key}^{${o.electrons}}}`)
+        .join(" \\, ");
+    return (
+        <FormulaBlock
+            latex={`\\text{${element.symbol}} : \\; ${terms}`}
+            colorMap={{ roomS: roomColor("s"), roomP: roomColor("p"), roomD: roomColor("d"), roomF: roomColor("f") }}
+        />
+    );
+}
+
+function BuildWorkedElementTrigger() {
+    const { name, atomicNumber } = useWorkedElement();
+    return (
+        <InlineTrigger id="trigger-writing-configurations-build-worked" varName="atomicNumber" value={atomicNumber} icon="play">
+            load {name}'s {atomicNumber} electrons into the builder
+        </InlineTrigger>
+    );
+}
+
 function ElementNameReadout() {
     const atomicNumber = clamp(Math.round(useVar<number>("atomicNumber", 16)), 1, MAX_Z);
     return <span style={{ fontWeight: 600, color: INK }}>{elementFor(atomicNumber).name.toLowerCase()}</span>;
@@ -358,31 +442,26 @@ export const writingConfigurationsBlocks: ReactElement[] = [
     <StackLayout key="layout-writing-configurations-worked" maxWidth="xl">
         <Block id="writing-configurations-worked" padding="sm">
             <EditableParagraph id="para-writing-configurations-worked" blockId="writing-configurations-worked">
-                Take sulfur, which has 16 electrons. Put 2 into{" "}
-                <InlineFormula latex="\clr{roomS}{1s}" colorMap={{ roomS: roomColor("s") }} /> (14 left), 2 into <InlineFormula latex="\clr{roomS}{2s}" colorMap={{ roomS: roomColor("s") }} />{" "}
-                (12 left), 6 into <InlineFormula latex="\clr{roomP}{2p}" colorMap={{ roomP: roomColor("p") }} /> (6 left), 2 into{" "}
-                <InlineFormula latex="\clr{roomS}{3s}" colorMap={{ roomS: roomColor("s") }} /> (4 left), and the last 4 go into{" "}
-                <InlineFormula latex="\clr{roomP}{3p}" colorMap={{ roomP: roomColor("p") }} />, which could have taken 6. Writing that out gives:
+                Take <WorkedElementToggle />, which has <WorkedElectronCount /> electrons.{" "}
+                <WorkedHandOut />. Writing that out gives:
             </EditableParagraph>
         </Block>
     </StackLayout>,
 
     <StackLayout key="layout-writing-configurations-sulfur" maxWidth="xl">
         <Block id="writing-configurations-sulfur" padding="lg">
-            <FormulaBlock
-                latex="\text{S} : \; \clr{roomS}{1s^2} \, \clr{roomS}{2s^2} \, \clr{roomP}{2p^6} \, \clr{roomS}{3s^2} \, \clr{roomP}{3p^4}"
-                colorMap={{ roomS: roomColor("s"), roomP: roomColor("p"), roomD: roomColor("d"), roomF: roomColor("f") }}
-            />
+            <WorkedConfigurationFormula />
         </Block>
     </StackLayout>,
 
     <StackLayout key="layout-writing-configurations-builder-intro" maxWidth="xl">
         <Block id="writing-configurations-builder-intro" padding="sm">
             <EditableParagraph id="para-writing-configurations-builder-intro" blockId="writing-configurations-builder-intro">
-                Now do the handing-out yourself. The builder starts with sulfur's 16 electrons
-                waiting to be placed. Click <InlineFormula latex="\clr{roomS}{1s}" colorMap={{ roomS: roomColor("s") }} /> first, then keep clicking
-                the next subshell in the filling order — a click on the wrong subshell is refused,
-                and the configuration is written underneath as you go.
+                Now do the handing-out yourself: <BuildWorkedElementTrigger />, or pick any element
+                with the − and + buttons. Click{" "}
+                <InlineFormula latex="\clr{roomS}{1s}" colorMap={{ roomS: roomColor("s") }} /> first, then keep
+                clicking the next subshell in the filling order — a click on the wrong subshell is
+                refused, and the configuration is written underneath as you go.
             </EditableParagraph>
         </Block>
     </StackLayout>,

@@ -268,6 +268,14 @@ export const variableDefinitions: Record<string, VariableDefinition> = {
     // ─────────────────────────────────────────
     // Section 6 — Writing a configuration
     // ─────────────────────────────────────────
+    workedElement: {
+        defaultValue: 'sulfur',
+        type: 'select',
+        label: 'Worked-example element',
+        description: 'Which element the worked configuration example walks through',
+        options: ['sulfur', 'oxygen', 'sodium', 'chlorine', 'calcium', 'iron'],
+        color: '#D946EF',
+    },
     atomicNumber: {
         defaultValue: 16,
         type: 'number',

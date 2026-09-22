@@ -390,7 +390,7 @@ function ConfigurationSumReadout() {
 export const writingConfigurationsBlocks: ReactElement[] = [
     <StackLayout key="layout-writing-configurations-heading" maxWidth="xl">
         <Block id="writing-configurations-heading" padding="sm">
-            <EditableH2 id="h2-writing-configurations-heading" blockId="writing-configurations-heading">6. Writing a configuration</EditableH2>
+            <EditableH2 id="h2-writing-configurations-heading" blockId="writing-configurations-heading">Writing a configuration</EditableH2>
         </Block>
     </StackLayout>,
 

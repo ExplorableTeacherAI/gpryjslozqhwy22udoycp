@@ -304,7 +304,7 @@ export const whereElectronsLiveBlocks: ReactElement[] = [
 
     <StackLayout key="layout-electrons-live-intro" maxWidth="xl">
         <Block id="electrons-live-intro" padding="sm">
-            <EditableParagraph id="para-electrons-live-intro" blockId="electrons-live-intro"></EditableParagraph>
+            <EditableParagraph id="para-electrons-live-intro" blockId="electrons-live-intro">In t</EditableParagraph>
         </Block>
     </StackLayout>,
 

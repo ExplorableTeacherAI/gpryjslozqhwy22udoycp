@@ -22,8 +22,8 @@
     "subshells-heading",
     "subshells-definition",
     "subshells-count-rule",
-    "subshells-floors",
     "subshells-naming",
+    "subshells-floors",
     "subshells-question",
     "orbitals-heading",
     "orbitals-definition",
@@ -275,19 +275,8 @@
       "columns": [
         [
           "subshells-count-rule",
+          "subshells-naming",
           "subshells-floors"
-        ]
-      ],
-      "props": {
-        "maxWidth": "xl"
-      }
-    },
-    {
-      "id": "layout-subshells-floors",
-      "type": "stack",
-      "columns": [
-        [
-          "subshells-naming"
         ]
       ],
       "props": {

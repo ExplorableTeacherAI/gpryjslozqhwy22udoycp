@@ -167,14 +167,15 @@ export const variableDefinitions: Record<string, VariableDefinition> = {
         max: 50,
         step: 1,
     },
-    shellFourCapacityAnswer: {
+    shellSixCapacityAnswer: {
         defaultValue: '',
-        type: 'text',
-        label: 'Shell 4 capacity answer',
-        description: 'Student answer for the maximum electrons in shell 4',
+        type: 'select',
+        label: 'Shell 6 capacity answer',
+        description: 'Student answer for the maximum electrons in shell 6 (2 × 6² = 72); distractors are 2 × 6, 6² and 2 × 6 × 6 − 8',
         placeholder: '???',
-        correctAnswer: '32',
-        color: '#3B82F6',
+        correctAnswer: '72',
+        options: ['12', '36', '64', '72'],
+        color: '#D81B60',
     },
 
     // ─────────────────────────────────────────
@@ -202,6 +203,20 @@ export const variableDefinitions: Record<string, VariableDefinition> = {
     // ─────────────────────────────────────────
     // Section 4 — Orbitals
     // ─────────────────────────────────────────
+    orbitalSpinning: {
+        defaultValue: true,
+        type: 'boolean',
+        label: 'Orbitals spinning',
+        description: 'Play state of the 3D orbital-shape figure: slowly rotates all orbitals while true',
+    },
+    orbitalShapeHighlight: {
+        defaultValue: '',
+        type: 'linkedHighlight',
+        label: 'Orbital shape highlight',
+        description: 'Which orbital shape panel is highlighted: sphere, dumbbell or cloverleaf',
+        color: '#62D0AD',
+        bgColor: 'rgba(98, 208, 173, 0.18)',
+    },
     orbitalRoom: {
         defaultValue: 'p',
         type: 'select',

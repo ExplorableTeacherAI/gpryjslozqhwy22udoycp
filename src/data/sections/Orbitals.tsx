@@ -7,6 +7,7 @@ import {
     InlineFormula,
     InlineClozeInput,
     InlineFeedback,
+    InlineLinkedHighlight,
     InlineToggle,
     InteractionHintSequence,
     Table,
@@ -14,7 +15,13 @@ import {
 import { Figure } from "@/components/molecules";
 import { useVar, useSetVar } from "@/stores";
 import { useSpring } from "@/lib/motion";
-import { getVariableInfo, clozePropsFromDefinition, togglePropsFromDefinition } from "../variables";
+import {
+    getVariableInfo,
+    clozePropsFromDefinition,
+    linkedHighlightPropsFromDefinition,
+    togglePropsFromDefinition,
+} from "../variables";
+import { OrbitalShapesFigure } from "./orbitalShapesFigure";
 import {
     ACCENT,
     ACCENT_SOFT,
@@ -251,8 +258,57 @@ export const orbitalsBlocks: ReactElement[] = [
                 Inside every room there are desks, and an orbital is one of those desks. An
                 orbital is not a track the electron runs along — it is a region of space where
                 that electron is very likely to be found. An <InlineFormula latex="s" /> orbital
-                is a sphere around the nucleus; a <InlineFormula latex="p" /> orbital is a
-                dumbbell shape pointing along one direction.
+                is{" "}
+                <InlineLinkedHighlight
+                    id="highlight-orbitals-sphere"
+                    varName="orbitalShapeHighlight"
+                    highlightId="sphere"
+                    showHint={false}
+                    {...linkedHighlightPropsFromDefinition(getVariableInfo("orbitalShapeHighlight"))}
+                >
+                    a sphere
+                </InlineLinkedHighlight>{" "}
+                around the nucleus; a <InlineFormula latex="p" /> orbital is{" "}
+                <InlineLinkedHighlight
+                    id="highlight-orbitals-dumbbell"
+                    varName="orbitalShapeHighlight"
+                    highlightId="dumbbell"
+                    showHint={false}
+                    {...linkedHighlightPropsFromDefinition(getVariableInfo("orbitalShapeHighlight"))}
+                >
+                    a dumbbell
+                </InlineLinkedHighlight>{" "}
+                pointing along one direction; a <InlineFormula latex="d" /> orbital is{" "}
+                <InlineLinkedHighlight
+                    id="highlight-orbitals-cloverleaf"
+                    varName="orbitalShapeHighlight"
+                    highlightId="cloverleaf"
+                    showHint={false}
+                    {...linkedHighlightPropsFromDefinition(getVariableInfo("orbitalShapeHighlight"))}
+                >
+                    a cloverleaf
+                </InlineLinkedHighlight>
+                . Turn the shapes below to see them from every side.
+            </EditableParagraph>
+        </Block>
+    </StackLayout>,
+
+    <StackLayout key="layout-orbitals-shapes" maxWidth="xl">
+        <Block id="orbitals-shapes" padding="sm" hasVisualization>
+            <OrbitalShapesFigure />
+        </Block>
+    </StackLayout>,
+
+    <StackLayout key="layout-orbitals-shapes-reading" maxWidth="xl">
+        <Block id="orbitals-shapes-reading" padding="sm">
+            <EditableParagraph id="para-orbitals-shapes-reading" blockId="orbitals-shapes-reading">
+                Two things to notice while they turn. The three <InlineFormula latex="p" />{" "}
+                orbitals are one and the same dumbbell, pointing along <InlineFormula latex="x" />,{" "}
+                <InlineFormula latex="y" /> or <InlineFormula latex="z" /> — which is why a{" "}
+                <InlineFormula latex="p" /> room has exactly three desks. And four of the five{" "}
+                <InlineFormula latex="d" /> orbitals are the same cloverleaf lying in different
+                planes, with <InlineFormula latex="d_{z^2}" /> the odd one out — five desks in a{" "}
+                <InlineFormula latex="d" /> room.
             </EditableParagraph>
         </Block>
     </StackLayout>,

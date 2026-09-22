@@ -5,7 +5,7 @@ import {
     EditableH2,
     EditableParagraph,
     InlineFormula,
-    InlineClozeInput,
+    InlineClozeChoice,
     InlineFeedback,
     InlineLinkedHighlight,
     InlineScrubbleNumber,
@@ -16,7 +16,7 @@ import { useVar, useSetVar } from "@/stores";
 import { clamp, useSpring } from "@/lib/motion";
 import {
     getVariableInfo,
-    clozePropsFromDefinition,
+    choicePropsFromDefinition,
     linkedHighlightPropsFromDefinition,
     numberPropsFromDefinition,
     scrubVarsFromDefinitions,
@@ -352,23 +352,25 @@ export const shellsBlocks: ReactElement[] = [
     <StackLayout key="layout-shells-capacity-question" maxWidth="xl">
         <Block id="shells-capacity-question" padding="sm">
             <EditableParagraph id="para-shells-capacity-question" blockId="shells-capacity-question">
-                The picture above stops at three rings, but the rule keeps going. Using the same
-                formula, the most electrons shell 4 can hold is{" "}
+                The squares stop at <InlineFormula latex="\clr{n}{n} = \clr{n}{5}" colorMap={{ n: N_COLOR }} />,
+                but the rule keeps going. Picture shell 6 as two squares of 6 × 6 electrons: the
+                most electrons shell 6 can hold is{" "}
                 <InlineFeedback
-                    varName="shellFourCapacityAnswer"
-                    correctValue="32"
+                    varName="shellSixCapacityAnswer"
+                    correctValue="72"
                     position="terminal"
-                    successMessage="— exactly: 2 × 4² = 2 × 16 = 32"
+                    successMessage="— exactly: two squares of 6 × 6 is 2 × 36 = 72"
                     failureMessage="— not quite."
-                    hint="Square the shell number first, then double it"
-                    reviewBlockId="shells-capacity-formula"
-                    reviewLabel="See the formula"
+                    hint="Square the shell number first (6 × 6), then double it — 36 is only one square, and 12 forgets to square"
+                    reviewBlockId="shells-capacity-squares"
+                    reviewLabel="Drag n to 5 and imagine one more row"
                 >
-                    <InlineClozeInput
-                        id="cloze-shells-four-capacity"
-                        varName="shellFourCapacityAnswer"
-                        correctAnswer="32"
-                        {...clozePropsFromDefinition(getVariableInfo("shellFourCapacityAnswer"))}
+                    <InlineClozeChoice
+                        id="choice-shells-six-capacity"
+                        varName="shellSixCapacityAnswer"
+                        correctAnswer="72"
+                        options={["12", "36", "64", "72"]}
+                        {...choicePropsFromDefinition(getVariableInfo("shellSixCapacityAnswer"))}
                     />
                 </InlineFeedback>
                 .

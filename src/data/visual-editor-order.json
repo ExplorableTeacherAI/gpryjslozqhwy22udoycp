@@ -27,6 +27,7 @@
     "subshells-question",
     "orbitals-heading",
     "orbitals-definition",
+    "orbitals-shapes",
     "orbitals-two-electrons",
     "orbitals-boxes",
     "orbitals-counting",
@@ -49,7 +50,8 @@
     "writing-configurations-builder-intro",
     "writing-configurations-builder",
     "writing-configurations-check",
-    "writing-configurations-question"
+    "writing-configurations-question",
+    "orbitals-shapes-reading"
   ],
   "rows": [
     {
@@ -313,6 +315,18 @@
       "columns": [
         [
           "orbitals-definition"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "editor-full-orbitals-shapes",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-shapes"
         ]
       ],
       "props": {
@@ -589,6 +603,18 @@
       "columns": [
         [
           "writing-configurations-question"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "editor-full-orbitals-shapes-reading",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-shapes-reading"
         ]
       ],
       "props": {

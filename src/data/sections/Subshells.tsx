@@ -246,26 +246,6 @@ export const subshellsBlocks: ReactElement[] = [
         </Block>
     </StackLayout>,
 
-    <StackLayout key="layout-subshells-table" maxWidth="xl">
-        <Block id="subshells-table" padding="sm">
-            <Table
-                columns={[
-                    { header: "Shell", align: "center", width: 100 },
-                    { header: "Number of subshells", align: "center", width: 180 },
-                    { header: "Subshells on that shell", align: "left" },
-                ]}
-                rows={[
-                    { cells: ["1", "1", "1s"] },
-                    { cells: ["2", "2", "2s, 2p"] },
-                    { cells: ["3", "3", "3s, 3p, 3d"] },
-                    { cells: ["4", "4", "4s, 4p, 4d, 4f"] },
-                ]}
-                color="#6366f1"
-                caption="Each shell contains as many subshells as its shell number."
-            />
-        </Block>
-    </StackLayout>,
-
     <StackLayout key="layout-subshells-question" maxWidth="xl">
         <Block id="subshells-question" padding="sm">
             <EditableParagraph id="para-subshells-question" blockId="subshells-question">

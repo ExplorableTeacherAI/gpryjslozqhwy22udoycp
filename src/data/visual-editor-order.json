@@ -24,7 +24,6 @@
     "subshells-count-rule",
     "subshells-floors",
     "subshells-naming",
-    "subshells-table",
     "subshells-question",
     "orbitals-heading",
     "orbitals-definition",
@@ -285,20 +284,14 @@
     },
     {
       "id": "layout-subshells-floors",
-      "type": "split",
+      "type": "stack",
       "columns": [
         [
           "subshells-naming"
-        ],
-        [
-          "subshells-table"
         ]
       ],
       "props": {
-        "ratio": "1:1",
-        "gap": "lg",
-        "reverse": false,
-        "align": "start"
+        "maxWidth": "xl"
       }
     },
     {

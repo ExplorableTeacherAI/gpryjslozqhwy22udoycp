@@ -12,8 +12,8 @@
     "shells-heading",
     "shells-definition",
     "shells-energy-idea",
-    "shells-fill",
     "shells-fill-reading",
+    "shells-fill",
     "shells-capacity",
     "shells-capacity-formula",
     "shells-capacity-worked",
@@ -169,26 +169,20 @@
     },
     {
       "id": "layout-shells-fill",
-      "type": "stack",
+      "type": "split",
       "columns": [
+        [
+          "shells-fill-reading"
+        ],
         [
           "shells-fill"
         ]
       ],
       "props": {
-        "maxWidth": "xl"
-      }
-    },
-    {
-      "id": "layout-shells-fill-reading",
-      "type": "stack",
-      "columns": [
-        [
-          "shells-fill-reading"
-        ]
-      ],
-      "props": {
-        "maxWidth": "xl"
+        "ratio": "1:1",
+        "gap": "lg",
+        "reverse": false,
+        "align": "start"
       }
     },
     {

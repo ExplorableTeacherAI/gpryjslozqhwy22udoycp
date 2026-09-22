@@ -71,16 +71,19 @@ function Electron({ x, y, seated = false }: { x: number; y: number; seated?: boo
 }
 
 /** A desk with a chair; `count` electrons sit at it. */
-function Desk({ x, floorY, count, selected, hovered, onClick, onEnter, onLeave }: {
-    x: number; floorY: number; count: number; selected: boolean; hovered: boolean;
+function Desk({ x, floorY, count, selected, popped, hovered, onClick, onEnter, onLeave }: {
+    x: number; floorY: number; count: number; selected: boolean; popped: boolean; hovered: boolean;
     onClick: () => void; onEnter: () => void; onLeave: () => void;
 }) {
     const topY = floorY - 22;
     return (
         <g style={{ cursor: "pointer" }} onClick={onClick} onPointerEnter={onEnter} onPointerLeave={onLeave}>
             {/* highlight pad under the selected / hovered desk */}
+            {selected && popped && (
+                <rect x={x - 6} y={floorY - 48} width={DESK + 12} height={52} rx="7" fill="none" stroke={ACCENT} strokeWidth="8" strokeOpacity="0.28" />
+            )}
             {(selected || hovered) && (
-                <rect x={x - 2} y={floorY - 44} width={DESK + 4} height={44} rx="5" fill={ACCENT} fillOpacity={selected ? 0.22 : 0.1} stroke={selected ? INK : "none"} strokeWidth="1.5" />
+                <rect x={x - 2} y={floorY - 44} width={DESK + 4} height={44} rx="5" fill={ACCENT} fillOpacity={popped ? 0.4 : selected ? 0.22 : 0.1} stroke={selected ? INK : "none"} strokeWidth={popped ? 2.5 : 1.5} />
             )}
             {/* chair: a small back and seat behind the desk */}
             <line x1={x + DESK - 1} y1={topY - 16} x2={x + DESK - 1} y2={topY - 3} stroke={INK_SOFT} strokeWidth="2" strokeLinecap="round" />
@@ -143,6 +146,7 @@ function AddressBuildingDrawing() {
             </text>
 
             {/* Stairwell: electrons come in at the bottom and fill upwards */}
+            <g opacity={highlight ? 0.4 : 1}>
             <rect x={BUILDING.x} y={roofY} width={STAIRS_WIDTH} height={LOBBY_TOP - roofY} fill={PAPER_TINT} stroke="none" />
             <line x1={BUILDING.x + STAIRS_WIDTH} y1={roofY} x2={BUILDING.x + STAIRS_WIDTH} y2={LOBBY_TOP} stroke={INK_SOFT} strokeWidth="1.5" />
             {Array.from({ length: Math.floor((LOBBY_TOP - roofY) / 8) }, (_, i) => (
@@ -183,6 +187,7 @@ function AddressBuildingDrawing() {
             <text x={24} y={LOBBY_TOP + 35} fontSize="11" fill={INK_SOFT}>
                 the nucleus
             </text>
+            </g>
 
             {Array.from({ length: FLOOR_COUNT }, (_, index) => {
                 const n = index + 1;
@@ -190,7 +195,7 @@ function AddressBuildingDrawing() {
                 const floorY = top + FLOOR_HEIGHT; // the slab this floor stands on
                 const isSelectedFloor = n === selected.n;
                 return (
-                    <g key={n} opacity={isSelectedFloor ? dim("floor") : highlight ? 0.4 : 1}>
+                    <g key={n} opacity={highlight && !isSelectedFloor ? 0.4 : 1}>
                         {/* Floor slab */}
                         <line x1={BUILDING.x + STAIRS_WIDTH} y1={floorY} x2={WALL_RIGHT} y2={floorY} stroke={INK} strokeWidth="2" />
                         {/* Selected floor: soft band that pops on hover of "shell" */}
@@ -201,12 +206,12 @@ function AddressBuildingDrawing() {
                                 width={WALL_RIGHT - BUILDING.x - STAIRS_WIDTH - 2}
                                 height={FLOOR_HEIGHT - 3}
                                 fill={ACCENT}
-                                fillOpacity={highlight === "floor" ? 0.18 : 0.07}
+                                fillOpacity={highlight === "floor" ? 0.18 : highlight ? 0 : 0.07}
                                 {...hoverProps("floor")}
                             />
                         )}
                         {/* Floor label outside the wall, with a tick to the slab */}
-                        <g {...(isSelectedFloor ? hoverProps("floor") : {})}>
+                        <g opacity={isSelectedFloor ? dim("floor") : 1} {...(isSelectedFloor ? hoverProps("floor") : {})}>
                             <text x={24} y={top + FLOOR_HEIGHT / 2 + 1} fontSize="13" fill={INK} fontWeight={isSelectedFloor ? 700 : 500}>
                                 {`floor ${n}`}
                             </text>
@@ -236,23 +241,31 @@ function AddressBuildingDrawing() {
                                 const isSelectedRoom = isSelectedFloor && room === selected.room;
                                 const ceiling = top + 8;
                                 return (
-                                    <g key={room} opacity={roomReveal} {...(isSelectedRoom ? hoverProps("room") : {})}>
+                                    <g
+                                        key={room}
+                                        opacity={roomReveal * ((highlight === "room" || highlight === "desk") && !isSelectedRoom ? 0.4 : 1)}
+                                        {...(isSelectedRoom ? hoverProps("room") : {})}
+                                    >
+                                        {/* Halo around the selected room while "subshell" is hovered */}
+                                        {isSelectedRoom && highlight === "room" && (
+                                            <rect x={x - 5} y={ceiling - 5} width={width + 10} height={floorY - ceiling + 10} rx="6" fill="none" stroke={ACCENT} strokeWidth="8" strokeOpacity="0.28" />
+                                        )}
                                         <rect
                                             x={x}
                                             y={ceiling}
                                             width={width}
                                             height={floorY - ceiling}
-                                            fill={isSelectedRoom ? ACCENT_SOFT : "#FFFFFF"}
-                                            stroke={isSelectedRoom ? ACCENT : INK_SOFT}
-                                            strokeWidth={isSelectedRoom ? (highlight === "room" ? 3.5 : 2.5) : 1.5}
+                                            fill={isSelectedRoom && highlight !== "desk" ? ACCENT_SOFT : "#FFFFFF"}
+                                            stroke={isSelectedRoom && highlight !== "desk" ? ACCENT : INK_SOFT}
+                                            strokeWidth={isSelectedRoom && highlight !== "desk" ? (highlight === "room" ? 4 : 2.5) : 1.5}
                                         />
                                         {/* door in the room's left wall (hidden once the desks are shown) */}
                                         {!showDesks && (
                                             <rect x={x + 3} y={floorY - 24} width="9" height="24" rx="1.5" fill={PAPER_TINT} stroke={INK_SOFT} strokeWidth="1" />
                                         )}
                                         {/* name plate above the door */}
-                                        <rect x={x + 3} y={ceiling + 4} width="24" height="14" rx="2" fill={isSelectedRoom ? INK : PAPER_TINT} stroke={INK_SOFT} strokeWidth="1" />
-                                        <text x={x + 15} y={ceiling + 14.5} textAnchor="middle" fontSize="10" fill={isSelectedRoom ? "#FFFFFF" : INK} fontWeight={700}>
+                                        <rect x={x + 3} y={ceiling + 4} width="24" height="14" rx="2" fill={isSelectedRoom && highlight !== "desk" ? INK : PAPER_TINT} stroke={INK_SOFT} strokeWidth="1" opacity={highlight === "desk" ? 0.4 : 1} />
+                                        <text x={x + 15} y={ceiling + 14.5} textAnchor="middle" fontSize="10" fill={isSelectedRoom && highlight !== "desk" ? "#FFFFFF" : INK} fontWeight={700} opacity={highlight === "desk" ? 0.4 : 1}>
                                             {`${n}${room}`}
                                         </text>
                                         {/* Room-level view: people standing in the room */}
@@ -268,12 +281,13 @@ function AddressBuildingDrawing() {
                                                 const dx = x + ROOM_PAD + deskIndex * (DESK + DESK_GAP);
                                                 const isSelectedDesk = isSelectedRoom && desk === selected.desk;
                                                 return (
-                                                    <g key={key} opacity={deskReveal}>
+                                                    <g key={key} opacity={deskReveal * (highlight === "desk" && !isSelectedDesk ? 0.4 : 1)}>
                                                         <Desk
                                                             x={dx}
                                                             floorY={floorY - 1}
                                                             count={SEATED[key] ?? 0}
                                                             selected={isSelectedDesk}
+                                                            popped={isSelectedDesk && highlight === "desk"}
                                                             hovered={hoverDesk === key}
                                                             onClick={() => setVar("addressDesk", key)}
                                                             onEnter={() => {

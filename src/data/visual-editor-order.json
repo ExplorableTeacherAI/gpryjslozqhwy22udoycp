@@ -21,8 +21,8 @@
     "shells-capacity-question",
     "subshells-heading",
     "subshells-definition",
-    "subshells-count-rule",
     "subshells-naming",
+    "subshells-count-rule",
     "subshells-floors",
     "subshells-question",
     "orbitals-heading",
@@ -271,16 +271,21 @@
     },
     {
       "id": "editor-full-subshells-count-rule",
-      "type": "stack",
+      "type": "split",
       "columns": [
         [
+          "subshells-naming"
+        ],
+        [
           "subshells-count-rule",
-          "subshells-naming",
           "subshells-floors"
         ]
       ],
       "props": {
-        "maxWidth": "xl"
+        "ratio": "1:1",
+        "gap": "lg",
+        "reverse": false,
+        "align": "start"
       }
     },
     {

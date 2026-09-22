@@ -1,4 +1,638 @@
 {
-  "version": 2,
-  "blockIds": []
+  "version": 3,
+  "blockIds": [
+    "electrons-live-title",
+    "electrons-live-heading",
+    "electrons-live-opening",
+    "electrons-live-zoom",
+    "electrons-live-zoom-reading",
+    "electrons-live-building",
+    "electrons-live-address-building",
+    "electrons-live-addresses",
+    "shells-heading",
+    "shells-definition",
+    "shells-energy-idea",
+    "shells-fill",
+    "shells-fill-reading",
+    "shells-capacity",
+    "shells-capacity-formula",
+    "shells-capacity-worked",
+    "shells-capacity-question",
+    "subshells-heading",
+    "subshells-definition",
+    "subshells-floors",
+    "subshells-count-rule",
+    "subshells-naming",
+    "subshells-table",
+    "subshells-question",
+    "orbitals-heading",
+    "orbitals-definition",
+    "orbitals-two-electrons",
+    "orbitals-boxes",
+    "orbitals-counting",
+    "orbitals-table",
+    "orbitals-shell-check",
+    "orbitals-question",
+    "filling-order-heading",
+    "filling-order-principle",
+    "filling-order-ladder",
+    "filling-order-ladder-reading",
+    "filling-order-sequence",
+    "filling-order-surprise",
+    "filling-order-rule",
+    "filling-order-question",
+    "writing-configurations-heading",
+    "writing-configurations-notation",
+    "writing-configurations-method",
+    "writing-configurations-worked",
+    "writing-configurations-sulfur",
+    "writing-configurations-builder-intro",
+    "writing-configurations-builder",
+    "writing-configurations-check",
+    "writing-configurations-question"
+  ],
+  "rows": [
+    {
+      "id": "layout-electrons-live-title",
+      "type": "stack",
+      "columns": [
+        [
+          "electrons-live-title"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-electrons-live-heading",
+      "type": "stack",
+      "columns": [
+        [
+          "electrons-live-heading"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-electrons-live-opening",
+      "type": "stack",
+      "columns": [
+        [
+          "electrons-live-opening"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-electrons-live-zoom",
+      "type": "stack",
+      "columns": [
+        [
+          "electrons-live-zoom"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-electrons-live-zoom-reading",
+      "type": "stack",
+      "columns": [
+        [
+          "electrons-live-zoom-reading"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-electrons-live-building",
+      "type": "split",
+      "columns": [
+        [
+          "electrons-live-building"
+        ],
+        [
+          "electrons-live-address-building"
+        ]
+      ],
+      "props": {
+        "ratio": "1:1",
+        "gap": "lg",
+        "reverse": false,
+        "align": "start"
+      }
+    },
+    {
+      "id": "layout-electrons-live-addresses",
+      "type": "stack",
+      "columns": [
+        [
+          "electrons-live-addresses"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-shells-heading",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-heading"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-shells-definition",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-definition"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-shells-energy-idea",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-energy-idea"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-shells-fill",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-fill"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-shells-fill-reading",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-fill-reading"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-shells-capacity",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-capacity"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-shells-capacity-formula",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-capacity-formula"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-shells-capacity-worked",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-capacity-worked"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-shells-capacity-question",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-capacity-question"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-subshells-heading",
+      "type": "stack",
+      "columns": [
+        [
+          "subshells-heading"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-subshells-definition",
+      "type": "stack",
+      "columns": [
+        [
+          "subshells-definition"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-subshells-floors",
+      "type": "stack",
+      "columns": [
+        [
+          "subshells-floors"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-subshells-count-rule",
+      "type": "stack",
+      "columns": [
+        [
+          "subshells-count-rule"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-subshells-naming",
+      "type": "stack",
+      "columns": [
+        [
+          "subshells-naming"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-subshells-table",
+      "type": "stack",
+      "columns": [
+        [
+          "subshells-table"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-subshells-question",
+      "type": "stack",
+      "columns": [
+        [
+          "subshells-question"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-orbitals-heading",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-heading"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-orbitals-definition",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-definition"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-orbitals-two-electrons",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-two-electrons"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-orbitals-boxes",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-boxes"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-orbitals-counting",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-counting"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-orbitals-table",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-table"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-orbitals-shell-check",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-shell-check"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-orbitals-question",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-question"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-filling-order-heading",
+      "type": "stack",
+      "columns": [
+        [
+          "filling-order-heading"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-filling-order-principle",
+      "type": "stack",
+      "columns": [
+        [
+          "filling-order-principle"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-filling-order-ladder",
+      "type": "stack",
+      "columns": [
+        [
+          "filling-order-ladder"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-filling-order-ladder-reading",
+      "type": "stack",
+      "columns": [
+        [
+          "filling-order-ladder-reading"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-filling-order-sequence",
+      "type": "stack",
+      "columns": [
+        [
+          "filling-order-sequence"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-filling-order-surprise",
+      "type": "stack",
+      "columns": [
+        [
+          "filling-order-surprise"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-filling-order-rule",
+      "type": "stack",
+      "columns": [
+        [
+          "filling-order-rule"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-filling-order-question",
+      "type": "stack",
+      "columns": [
+        [
+          "filling-order-question"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-writing-configurations-heading",
+      "type": "stack",
+      "columns": [
+        [
+          "writing-configurations-heading"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-writing-configurations-notation",
+      "type": "stack",
+      "columns": [
+        [
+          "writing-configurations-notation"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-writing-configurations-method",
+      "type": "stack",
+      "columns": [
+        [
+          "writing-configurations-method"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-writing-configurations-worked",
+      "type": "stack",
+      "columns": [
+        [
+          "writing-configurations-worked"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-writing-configurations-sulfur",
+      "type": "stack",
+      "columns": [
+        [
+          "writing-configurations-sulfur"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-writing-configurations-builder-intro",
+      "type": "stack",
+      "columns": [
+        [
+          "writing-configurations-builder-intro"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-writing-configurations-builder",
+      "type": "stack",
+      "columns": [
+        [
+          "writing-configurations-builder"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-writing-configurations-check",
+      "type": "stack",
+      "columns": [
+        [
+          "writing-configurations-check"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "layout-writing-configurations-question",
+      "type": "stack",
+      "columns": [
+        [
+          "writing-configurations-question"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    }
+  ]
 }

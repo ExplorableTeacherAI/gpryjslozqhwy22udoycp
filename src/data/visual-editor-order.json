@@ -13,8 +13,8 @@
     "shells-definition",
     "shells-energy-idea",
     "shells-fill-reading",
-    "shells-capacity",
     "shells-fill",
+    "shells-capacity",
     "shells-capacity-formula",
     "shells-capacity-worked",
     "shells-capacity-question",
@@ -172,8 +172,7 @@
       "type": "split",
       "columns": [
         [
-          "shells-fill-reading",
-          "shells-capacity"
+          "shells-fill-reading"
         ],
         [
           "shells-fill"
@@ -184,6 +183,18 @@
         "gap": "lg",
         "reverse": false,
         "align": "start"
+      }
+    },
+    {
+      "id": "editor-full-shells-capacity",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-capacity"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
       }
     },
     {

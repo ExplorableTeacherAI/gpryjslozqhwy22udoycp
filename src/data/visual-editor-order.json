@@ -274,10 +274,10 @@
       "type": "split",
       "columns": [
         [
-          "subshells-naming"
+          "subshells-naming",
+          "subshells-count-rule"
         ],
         [
-          "subshells-count-rule",
           "subshells-floors"
         ]
       ],

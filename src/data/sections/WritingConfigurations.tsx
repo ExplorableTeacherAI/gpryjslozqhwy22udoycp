@@ -9,6 +9,7 @@ import {
     InlineFeedback,
     InlineScrubbleNumber,
     InteractionHintSequence,
+    EditableH1,
 } from "@/components/atoms";
 import { FormulaBlock, Figure, FigureSlider } from "@/components/molecules";
 import { useVar, useSetVar } from "@/stores";
@@ -389,7 +390,7 @@ function ConfigurationSumReadout() {
 export const writingConfigurationsBlocks: ReactElement[] = [
     <StackLayout key="layout-writing-configurations-heading" maxWidth="xl">
         <Block id="writing-configurations-heading" padding="sm">
-            <EditableH2 id="h2-writing-configurations-heading" blockId="writing-configurations-heading">Writing a configuration</EditableH2>
+            <EditableH2 id="h2-writing-configurations-heading" blockId="writing-configurations-heading">6. Writing a configuration</EditableH2>
         </Block>
     </StackLayout>,
 
@@ -495,6 +496,12 @@ export const writingConfigurationsBlocks: ReactElement[] = [
                 </InlineFeedback>
                 .
             </EditableParagraph>
+        </Block>
+    </StackLayout>,
+
+    <StackLayout key="layout-block-1790090588026" maxWidth="xl">
+        <Block id="block-1790090588026" padding="sm">
+            <EditableH1 id="h1-block-1790090588026" blockId="block-1790090588026">Conclusion</EditableH1>
         </Block>
     </StackLayout>,
 ];

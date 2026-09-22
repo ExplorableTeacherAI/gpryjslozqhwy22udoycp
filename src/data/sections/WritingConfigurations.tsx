@@ -9,7 +9,6 @@ import {
     InlineFeedback,
     InlineScrubbleNumber,
     InteractionHintSequence,
-    EditableH1,
 } from "@/components/atoms";
 import { FormulaBlock, Figure, FigureSlider } from "@/components/molecules";
 import { useVar, useSetVar } from "@/stores";
@@ -21,6 +20,7 @@ import {
     INK_SOFT,
     INK_FAINT,
     PAPER_TINT,
+    N_COLOR,
     ORBITALS_PER_ROOM,
     elementFor,
     fillSubshells,
@@ -499,15 +499,45 @@ export const writingConfigurationsBlocks: ReactElement[] = [
         </Block>
     </StackLayout>,
 
-    <StackLayout key="layout-block-1790090621680" maxWidth="xl">
-        <Block id="block-1790090621680" padding="sm">
-            <EditableH2 id="h2-block-1790090621680" blockId="block-1790090621680">Conclusion</EditableH2>
+    <StackLayout key="layout-writing-configurations-conclusion-heading" maxWidth="xl">
+        <Block id="writing-configurations-conclusion-heading" padding="sm">
+            <EditableH2 id="h2-writing-configurations-conclusion-heading" blockId="writing-configurations-conclusion-heading">
+                Conclusion
+            </EditableH2>
         </Block>
     </StackLayout>,
 
-    <StackLayout key="layout-block-1790090645896" maxWidth="xl">
-        <Block id="block-1790090645896" padding="sm">
-            <EditableParagraph id="para-block-1790090645896" blockId="block-1790090645896">here is the conclusion</EditableParagraph>
+    <StackLayout key="layout-writing-configurations-conclusion" maxWidth="xl">
+        <Block id="writing-configurations-conclusion" padding="sm">
+            <EditableParagraph id="para-writing-configurations-conclusion" blockId="writing-configurations-conclusion">
+                An electron configuration looks like a code, but you now know it is just an
+                address book. Each electron lives on a floor (its shell,{" "}
+                <InlineFormula latex="\clr{n}{n}" colorMap={{ n: N_COLOR }} />), in a room on that
+                floor (its subshell,{" "}
+                <InlineFormula latex="\clr{roomS}{s}" colorMap={{ roomS: roomColor("s") }} />,{" "}
+                <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} />,{" "}
+                <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> or{" "}
+                <InlineFormula latex="\clr{roomF}{f}" colorMap={{ roomF: roomColor("f") }} />), at a
+                desk in that room (its orbital), and no desk seats more than two. Electrons take
+                the lowest free place, so the whole arrangement follows from one list, the filling
+                order, with its one surprise that{" "}
+                <InlineFormula latex="\clr{roomS}{4s}" colorMap={{ roomS: roomColor("s") }} /> comes
+                before <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} />.
+                Given an atomic number, hand out the electrons along that list and write down the
+                rooms you used with their counts; add the raised numbers and they must equal the
+                atomic number. That is the whole method, and it is the same for every element.
+            </EditableParagraph>
+        </Block>
+    </StackLayout>,
+
+    <StackLayout key="layout-writing-configurations-conclusion-outlook" maxWidth="xl">
+        <Block id="writing-configurations-conclusion-outlook" padding="sm">
+            <EditableParagraph id="para-writing-configurations-conclusion-outlook" blockId="writing-configurations-conclusion-outlook">
+                Where this leads: the electrons in the outermost shell are the ones an atom uses
+                to bond, so two elements whose configurations end the same way behave alike. That
+                is why the columns of the periodic table exist, and reading the last term of a
+                configuration is the first step in predicting how an element will react.
+            </EditableParagraph>
         </Block>
     </StackLayout>,
 ];

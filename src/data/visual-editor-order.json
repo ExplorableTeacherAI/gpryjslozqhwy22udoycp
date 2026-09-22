@@ -2,6 +2,7 @@
   "version": 3,
   "blockIds": [
     "electrons-live-title",
+    "electrons-live-intro",
     "electrons-live-heading",
     "electrons-live-opening",
     "electrons-live-zoom",
@@ -60,6 +61,18 @@
       "columns": [
         [
           "electrons-live-title"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "editor-full-electrons-live-intro",
+      "type": "stack",
+      "columns": [
+        [
+          "electrons-live-intro"
         ]
       ],
       "props": {

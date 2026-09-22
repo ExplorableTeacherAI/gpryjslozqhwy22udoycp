@@ -17,7 +17,7 @@ import {
     linkedHighlightPropsFromDefinition,
     numberPropsFromDefinition,
 } from "../variables";
-import { ACCENT, INK, INK_SOFT, INK_FAINT } from "./electronModel";
+import { ACCENT, INK, INK_SOFT } from "./electronModel";
 
 // ── Atom zoom model ─────────────────────────────────────────────────────────
 // Lengths are in picometres. The view half-width shrinks exponentially with the
@@ -40,10 +40,10 @@ const SCALE_BAR_CHOICES = [100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 
 
 // Stepped density rings stand in for the probability cloud (no gradients).
 const CLOUD_RINGS = [
-    { fraction: 1.0, opacity: 0.1 },
-    { fraction: 0.72, opacity: 0.12 },
-    { fraction: 0.48, opacity: 0.16 },
-    { fraction: 0.28, opacity: 0.22 },
+    { fraction: 1.0, opacity: 0.08 },
+    { fraction: 0.72, opacity: 0.06 },
+    { fraction: 0.48, opacity: 0.06 },
+    { fraction: 0.28, opacity: 0.07 },
 ];
 
 function AtomZoomDrawing() {
@@ -114,7 +114,7 @@ function AtomZoomDrawing() {
                             cy={CENTER.y}
                             r={cloudRadiusPx * ring.fraction}
                             fill={ACCENT}
-                            fillOpacity={ring.opacity + cloudHalo * 0.08}
+                            fillOpacity={ring.opacity + cloudHalo * 0.04}
                         />
                     ))}
                     {cloudEdgeVisible && (
@@ -230,7 +230,7 @@ function AtomZoomDrawing() {
             >
                 {`picture is ${formatLength(2 * halfPm)} across`}
             </text>
-            <text x={VIEW.width - 24} y={VIEW.height - 28} textAnchor="end" fontSize="11" fill={INK_FAINT}>
+            <text x={VIEW.width - 24} y={VIEW.height - 28} textAnchor="end" fontSize="11" fill={INK_SOFT}>
                 drag up to zoom in, down to zoom out
             </text>
         </svg>

@@ -1,8 +1,192 @@
-import { type ReactElement } from "react";
+import { type ReactElement, useState } from "react";
 import { Block } from "@/components/templates";
 import { StackLayout } from "@/components/layouts";
-import { EditableH2, EditableParagraph, InlineFormula, Table } from "@/components/atoms";
-import { VisualOptionCards } from "@/components/organisms";
+import {
+    EditableH2,
+    EditableParagraph,
+    InlineFormula,
+    InlineClozeChoice,
+    InlineFeedback,
+    InlineToggle,
+    InteractionHintSequence,
+    Table,
+} from "@/components/atoms";
+import { Figure } from "@/components/molecules";
+import { useVar, useSetVar } from "@/stores";
+import { useSpring } from "@/lib/motion";
+import { getVariableInfo, choicePropsFromDefinition, togglePropsFromDefinition } from "../variables";
+import { ACCENT, ACCENT_SOFT, INK, INK_SOFT, INK_FAINT, PAPER_TINT, roomsOnFloor } from "./electronModel";
+
+// ── Building layout ─────────────────────────────────────────────────────────
+const VIEW = { width: 560, height: 340 };
+const FLOOR_COUNT = 4;
+const FLOOR_HEIGHT = 56;
+const FLOOR_GAP = 8;
+const GROUND_Y = VIEW.height - 40;
+const ROOM_X = 132;
+const ROOM_WIDTH = 92;
+const ROOM_GAP = 10;
+const ROOM_HEIGHT = 34;
+const ENERGY_STAGGER = 5; // each successive room sits a little higher: slightly more energy
+
+const floorTop = (n: number) => GROUND_Y - n * (FLOOR_HEIGHT + FLOOR_GAP);
+
+function Floor({ n, selected, onSelect }: { n: number; selected: boolean; onSelect: () => void }) {
+    const [hover, setHover] = useState(false);
+    const emphasis = useSpring(selected ? 1 : 0, { stiffness: 260, damping: 24 });
+    const top = floorTop(n);
+    const rooms = roomsOnFloor(n);
+    const dimmed = !selected && !hover;
+
+    return (
+        <g
+            onClick={onSelect}
+            onPointerEnter={() => setHover(true)}
+            onPointerLeave={() => setHover(false)}
+            style={{ cursor: selected ? "default" : "pointer" }}
+            opacity={dimmed ? 0.55 : 1}
+        >
+            {/* Floor slab: a meaningful boundary, not a frame */}
+            <line
+                x1={24}
+                y1={top + FLOOR_HEIGHT}
+                x2={VIEW.width - 24}
+                y2={top + FLOOR_HEIGHT}
+                stroke={INK_SOFT}
+                strokeWidth={1.5 + emphasis}
+                strokeLinecap="round"
+            />
+            {/* Hit area for the whole floor */}
+            <rect x={24} y={top} width={VIEW.width - 48} height={FLOOR_HEIGHT} fill="transparent" />
+
+            <text x={28} y={top + 22} fontSize="13" fill={INK} fontWeight={selected ? 700 : 500}>
+                {`floor ${n}`}
+            </text>
+            <text x={28} y={top + 40} fontSize="11" fill={INK_SOFT} style={{ fontVariantNumeric: "tabular-nums" }}>
+                {`n = ${n} · ${rooms.length} room${rooms.length === 1 ? "" : "s"}`}
+            </text>
+
+            {rooms.map((room, index) => {
+                const x = ROOM_X + index * (ROOM_WIDTH + ROOM_GAP);
+                const y = top + FLOOR_HEIGHT - ROOM_HEIGHT - 6 - index * ENERGY_STAGGER * emphasis;
+                return (
+                    <g key={room}>
+                        <rect
+                            x={x}
+                            y={y}
+                            width={ROOM_WIDTH}
+                            height={ROOM_HEIGHT}
+                            rx="6"
+                            fill={selected ? ACCENT_SOFT : PAPER_TINT}
+                            stroke={selected ? ACCENT : INK_FAINT}
+                            strokeWidth={selected ? 2.5 : 1.5}
+                        />
+                        <text
+                            x={x + ROOM_WIDTH / 2}
+                            y={y + ROOM_HEIGHT / 2 + 5}
+                            textAnchor="middle"
+                            fontSize="15"
+                            fill={INK}
+                            fontWeight={selected ? 700 : 500}
+                        >
+                            {`${n}${room}`}
+                        </text>
+                    </g>
+                );
+            })}
+            {/* The empty part of a floor shows where rooms would go on higher floors */}
+            {selected && rooms.length < FLOOR_COUNT && (
+                <text
+                    x={ROOM_X + rooms.length * (ROOM_WIDTH + ROOM_GAP) + 4}
+                    y={top + FLOOR_HEIGHT - 18}
+                    fontSize="11"
+                    fill={INK_FAINT}
+                >
+                    {`no ${["s", "p", "d", "f"][rooms.length]} room on this floor`}
+                </text>
+            )}
+        </g>
+    );
+}
+
+function SubshellFloorsDrawing() {
+    const setVar = useSetVar();
+    const selected = Number(useVar<string>("subshellFloor", "2"));
+
+    return (
+        <svg viewBox={`0 0 ${VIEW.width} ${VIEW.height}`} className="block w-full select-none">
+            {/* Energy axis on the far right */}
+            <line
+                x1={VIEW.width - 30}
+                y1={GROUND_Y - 6}
+                x2={VIEW.width - 30}
+                y2={floorTop(FLOOR_COUNT) + 6}
+                stroke={INK_FAINT}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+            />
+            <polygon
+                points={`${VIEW.width - 30},${floorTop(FLOOR_COUNT)} ${VIEW.width - 35},${floorTop(FLOOR_COUNT) + 10} ${VIEW.width - 25},${floorTop(FLOOR_COUNT) + 10}`}
+                fill={INK_FAINT}
+            />
+            <text
+                x={VIEW.width - 30}
+                y={floorTop(FLOOR_COUNT) - 8}
+                textAnchor="middle"
+                fontSize="11"
+                fill={INK_SOFT}
+            >
+                energy
+            </text>
+
+            {/* Ground floor: the nucleus */}
+            <rect x={24} y={GROUND_Y + 2} width={VIEW.width - 48} height={16} rx="4" fill={INK} />
+            <text x={VIEW.width / 2} y={GROUND_Y + 14} textAnchor="middle" fontSize="11" fill="#FFFFFF" fontWeight={600}>
+                nucleus — ground floor
+            </text>
+
+            {Array.from({ length: FLOOR_COUNT }, (_, index) => {
+                const n = index + 1;
+                return (
+                    <Floor
+                        key={n}
+                        n={n}
+                        selected={selected === n}
+                        onSelect={() => setVar("subshellFloor", String(n))}
+                    />
+                );
+            })}
+        </svg>
+    );
+}
+
+function SubshellFloorsFigure() {
+    const setVar = useSetVar();
+    return (
+        <Figure
+            id="subshells-floors"
+            onReset={() => setVar("subshellFloor", "2")}
+            caption="Click a floor to open it. Its rooms are named by floor number and letter, and each extra room sits a little higher in energy than the one before."
+        >
+            <SubshellFloorsDrawing />
+            <InteractionHintSequence
+                hintKey="subshells-floors-click"
+                steps={[{ gesture: "click", label: "Click floor 3 to open it", position: { x: "12%", y: "30%" } }]}
+            />
+        </Figure>
+    );
+}
+
+function FloorRoomsReadout() {
+    const n = Number(useVar<string>("subshellFloor", "2"));
+    const rooms = roomsOnFloor(n).map((room) => `${n}${room}`);
+    const list = rooms.length === 1 ? rooms[0] : `${rooms.slice(0, -1).join(", ")} and ${rooms[rooms.length - 1]}`;
+    return (
+        <span>
+            has {rooms.length} room{rooms.length === 1 ? "" : "s"}: <span style={{ fontWeight: 600, color: INK }}>{list}</span>
+        </span>
+    );
+}
 
 export const subshellsBlocks: ReactElement[] = [
     <StackLayout key="layout-subshells-heading" maxWidth="xl">
@@ -25,15 +209,27 @@ export const subshellsBlocks: ReactElement[] = [
         </Block>
     </StackLayout>,
 
+    <StackLayout key="layout-subshells-floors" maxWidth="xl">
+        <Block id="subshells-floors" padding="sm" hasVisualization>
+            <SubshellFloorsFigure />
+        </Block>
+    </StackLayout>,
+
     <StackLayout key="layout-subshells-count-rule" maxWidth="xl">
         <Block id="subshells-count-rule" padding="sm">
             <EditableParagraph id="para-subshells-count-rule" blockId="subshells-count-rule">
                 Here is the rule that decides how many rooms a floor has: shell number{" "}
                 <InlineFormula latex="n" /> contains exactly <InlineFormula latex="n" />{" "}
-                subshells. So shell 1 has one room, shell 2 has two rooms, and shell 3 has three
-                rooms. The rooms are always added in the order{" "}
+                subshells. Click through the floors and count: floor{" "}
+                <InlineToggle
+                    id="toggle-subshells-floor"
+                    varName="subshellFloor"
+                    options={["1", "2", "3", "4"]}
+                    {...togglePropsFromDefinition(getVariableInfo("subshellFloor"))}
+                />{" "}
+                <FloorRoomsReadout />. The rooms are always added in the order{" "}
                 <InlineFormula latex="s" />, then <InlineFormula latex="p" />, then{" "}
-                <InlineFormula latex="d" />.
+                <InlineFormula latex="d" />, then <InlineFormula latex="f" />.
             </EditableParagraph>
         </Block>
     </StackLayout>,
@@ -69,36 +265,31 @@ export const subshellsBlocks: ReactElement[] = [
         </Block>
     </StackLayout>,
 
-    <StackLayout key="layout-subshells-visual" maxWidth="xl">
-        <Block id="subshells-visual" padding="sm">
-            <VisualOptionCards
-                blockId="subshells-visual"
-                intro="Pick how your students will see a shell split into its subshells."
-                cards={[
-                    {
-                        id: "floor-plan-rooms",
-                        title: "A floor plan where each shell opens up into its rooms",
-                        looks: "A row of floors stacked one above the other; choosing a floor shows the rooms on it, labelled 1s, 2s, 2p and so on.",
-                        manipulate: "Students click a floor number to open it and see how many rooms appear and what they are called.",
-                        reveals: "Shell number n always contains n subshells, added in the order s, p, d.",
-                        recommended: true,
-                    },
-                    {
-                        id: "expanding-tree",
-                        title: "A branching tree from atom to shells to subshells",
-                        looks: "A tree starting at the atom, branching to each shell, and branching again to the subshells belonging to that shell.",
-                        manipulate: "Students expand and collapse each branch to reveal the subshells underneath it.",
-                        reveals: "Subshells sit inside shells, so every subshell name carries its shell number with it.",
-                    },
-                    {
-                        id: "subshell-energy-strip",
-                        title: "Energy levels where each shell splits into closely spaced lines",
-                        looks: "A vertical energy scale where a single line for each shell separates into several nearby lines labelled s, p and d.",
-                        manipulate: "Students toggle the split on and off to compare the simple shell picture with the detailed one.",
-                        reveals: "Electrons on the same floor do not all have the same energy; the room they are in matters too.",
-                    },
-                ]}
-            />
+    <StackLayout key="layout-subshells-question" maxWidth="xl">
+        <Block id="subshells-question" padding="sm">
+            <EditableParagraph id="para-subshells-question" blockId="subshells-question">
+                Without opening the floor in the picture, name the third room on floor 3. It is
+                called{" "}
+                <InlineFeedback
+                    varName="subshellThirdRoomAnswer"
+                    correctValue="3d"
+                    position="terminal"
+                    successMessage="— right: floor 3, and the third letter in the order s, p, d"
+                    failureMessage="— not quite."
+                    hint="The rooms are added in the order s, then p, then d"
+                    reviewBlockId="subshells-floors"
+                    reviewLabel="Open floor 3 to check"
+                >
+                    <InlineClozeChoice
+                        id="choice-subshells-third-room"
+                        varName="subshellThirdRoomAnswer"
+                        correctAnswer="3d"
+                        options={["3s", "3p", "3d", "3f"]}
+                        {...choicePropsFromDefinition(getVariableInfo("subshellThirdRoomAnswer"))}
+                    />
+                </InlineFeedback>
+                .
+            </EditableParagraph>
         </Block>
     </StackLayout>,
 ];

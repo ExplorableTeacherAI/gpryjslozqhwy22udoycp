@@ -1,4 +1,4 @@
-import { type ReactElement, useState } from "react";
+import { type ReactElement } from "react";
 import { Block } from "@/components/templates";
 import { StackLayout } from "@/components/layouts";
 import {
@@ -20,7 +20,8 @@ import {
     linkedHighlightPropsFromDefinition,
     numberPropsFromDefinition,
 } from "../variables";
-import { ACCENT, INK, INK_SOFT, INK_FAINT, PAPER_TINT, fillShellsSimple, shellCapacity } from "./electronModel";
+import { ACCENT, INK, INK_SOFT, INK_FAINT, fillShellsSimple, shellCapacity } from "./electronModel";
+import { StepButton } from "./electronFigureParts";
 
 // ── Shell picture ───────────────────────────────────────────────────────────
 const VIEW = { width: 560, height: 360 };
@@ -107,38 +108,6 @@ function ShellRing({ n, electrons, newestIndex }: { n: number; electrons: number
             </text>
             {/* Invisible wide band so the ring can be hovered comfortably */}
             <circle cx={CENTER.x} cy={CENTER.y} r={radius} fill="none" stroke="transparent" strokeWidth={22} />
-        </g>
-    );
-}
-
-function StepButton({
-    x,
-    y,
-    label,
-    onClick,
-    disabled,
-}: {
-    x: number;
-    y: number;
-    label: string;
-    onClick: () => void;
-    disabled: boolean;
-}) {
-    const [hover, setHover] = useState(false);
-    const scale = useSpring(hover && !disabled ? 1.12 : 1, { stiffness: 400, damping: 26 });
-    return (
-        <g
-            transform={`translate(${x} ${y}) scale(${scale})`}
-            opacity={disabled ? 0.35 : 1}
-            style={{ cursor: disabled ? "default" : "pointer" }}
-            onPointerEnter={() => setHover(true)}
-            onPointerLeave={() => setHover(false)}
-            onClick={() => !disabled && onClick()}
-        >
-            <circle r="16" fill={PAPER_TINT} stroke={INK_SOFT} strokeWidth="1.5" />
-            <text y="5" textAnchor="middle" fontSize="16" fill={INK} fontWeight={600}>
-                {label}
-            </text>
         </g>
     );
 }

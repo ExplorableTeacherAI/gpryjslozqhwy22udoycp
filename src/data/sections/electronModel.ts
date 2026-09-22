@@ -36,13 +36,13 @@ export interface Subshell {
  */
 export const FILL_ORDER: Subshell[] = [
     { key: "1s", n: 1, room: "s", capacity: 2, energy: 0.0 },
-    { key: "2s", n: 2, room: "s", capacity: 2, energy: 0.3 },
-    { key: "2p", n: 2, room: "p", capacity: 6, energy: 0.37 },
-    { key: "3s", n: 3, room: "s", capacity: 2, energy: 0.56 },
-    { key: "3p", n: 3, room: "p", capacity: 6, energy: 0.63 },
-    { key: "4s", n: 4, room: "s", capacity: 2, energy: 0.77 },
+    { key: "2s", n: 2, room: "s", capacity: 2, energy: 0.28 },
+    { key: "2p", n: 2, room: "p", capacity: 6, energy: 0.36 },
+    { key: "3s", n: 3, room: "s", capacity: 2, energy: 0.54 },
+    { key: "3p", n: 3, room: "p", capacity: 6, energy: 0.62 },
+    { key: "4s", n: 4, room: "s", capacity: 2, energy: 0.74 },
     { key: "3d", n: 3, room: "d", capacity: 10, energy: 0.82 },
-    { key: "4p", n: 4, room: "p", capacity: 6, energy: 0.92 },
+    { key: "4p", n: 4, room: "p", capacity: 6, energy: 0.94 },
 ];
 
 export const MAX_ELECTRONS = FILL_ORDER.reduce((sum, s) => sum + s.capacity, 0);

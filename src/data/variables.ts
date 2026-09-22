@@ -174,13 +174,13 @@ export const variableDefinitions: Record<string, VariableDefinition> = {
         label: 'Electrons per orbital box',
         description: 'How many electrons (0-2) sit in each of the five possible orbital boxes',
     },
-    orbitalDRoomAnswer: {
+    orbitalFRoomAnswer: {
         defaultValue: '',
         type: 'text',
-        label: 'd room capacity answer',
-        description: 'Student answer for how many electrons a d room holds',
+        label: 'f room capacity answer',
+        description: 'Student answer for how many electrons an f room (7 desks) holds',
         placeholder: '???',
-        correctAnswer: '10',
+        correctAnswer: '14',
         color: '#3B82F6',
     },
 

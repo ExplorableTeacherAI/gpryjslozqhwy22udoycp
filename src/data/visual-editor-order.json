@@ -32,6 +32,7 @@
     "orbitals-two-electrons",
     "orbitals-boxes",
     "orbitals-counting",
+    "orbitals-capacity-formula",
     "orbitals-shell-check",
     "orbitals-question",
     "filling-order-heading",
@@ -374,6 +375,18 @@
       "columns": [
         [
           "orbitals-counting"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "editor-full-orbitals-capacity-formula",
+      "type": "stack",
+      "columns": [
+        [
+          "orbitals-capacity-formula"
         ]
       ],
       "props": {

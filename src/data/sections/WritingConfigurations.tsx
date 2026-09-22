@@ -9,7 +9,6 @@ import {
     InlineFeedback,
     InlineScrubbleNumber,
     InlineToggle,
-    InlineTrigger,
     InteractionHintSequence,
 } from "@/components/atoms";
 import { FormulaBlock, Figure, FigureSlider } from "@/components/molecules";
@@ -366,13 +365,19 @@ function WorkedConfigurationFormula() {
     );
 }
 
-function BuildWorkedElementTrigger() {
-    const { name, atomicNumber } = useWorkedElement();
-    return (
-        <InlineTrigger id="trigger-writing-configurations-build-worked" varName="atomicNumber" value={atomicNumber} icon="play">
-            load {name}'s {atomicNumber} electrons into the builder
-        </InlineTrigger>
-    );
+/** The builder follows the worked example: changing the element above reloads it. */
+function WorkedElementSync() {
+    const setVar = useSetVar();
+    const { atomicNumber } = useWorkedElement();
+    useEffect(() => {
+        setVar("atomicNumber", atomicNumber);
+    }, [atomicNumber, setVar]);
+    return null;
+}
+
+function WorkedElementName() {
+    const { name } = useWorkedElement();
+    return <span style={{ fontWeight: 600, color: INK }}>{name}</span>;
 }
 
 function ElementNameReadout() {
@@ -457,11 +462,13 @@ export const writingConfigurationsBlocks: ReactElement[] = [
     <StackLayout key="layout-writing-configurations-builder-intro" maxWidth="xl">
         <Block id="writing-configurations-builder-intro" padding="sm">
             <EditableParagraph id="para-writing-configurations-builder-intro" blockId="writing-configurations-builder-intro">
-                Now do the handing-out yourself: <BuildWorkedElementTrigger />, or pick any element
-                with the − and + buttons. Click{" "}
+                Now do the handing-out yourself. The builder below is loaded with{" "}
+                <WorkedElementName />'s <WorkedElectronCount /> electrons — it follows the element
+                chosen above, and the − and + buttons pick any other. Click{" "}
                 <InlineFormula latex="\clr{roomS}{1s}" colorMap={{ roomS: roomColor("s") }} /> first, then keep
                 clicking the next subshell in the filling order — a click on the wrong subshell is
                 refused, and the configuration is written underneath as you go.
+                <WorkedElementSync />
             </EditableParagraph>
         </Block>
     </StackLayout>,

@@ -104,6 +104,29 @@ export const variableDefinitions: Record<string, VariableDefinition> = {
         bgColor: 'rgba(98, 208, 173, 0.18)',
     },
 
+    addressLevel: {
+        defaultValue: 'floor',
+        type: 'select',
+        label: 'Address detail level',
+        description: 'How much of an electron address the building shows: floor, room or desk',
+        options: ['floor', 'room', 'desk'],
+        color: '#D946EF',
+    },
+    addressDesk: {
+        defaultValue: '2p-2',
+        type: 'text',
+        label: 'Selected desk',
+        description: 'The desk whose address is shown, as <shell><room>-<desk number>',
+    },
+    addressHighlight: {
+        defaultValue: '',
+        type: 'linkedHighlight',
+        label: 'Address part highlight',
+        description: 'Which part of the selected address is highlighted: floor, room or desk',
+        color: '#62D0AD',
+        bgColor: 'rgba(98, 208, 173, 0.18)',
+    },
+
     // ─────────────────────────────────────────
     // Section 2 — Shells
     // ─────────────────────────────────────────

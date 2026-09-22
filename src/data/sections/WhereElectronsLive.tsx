@@ -7,6 +7,7 @@ import {
     EditableParagraph,
     InlineLinkedHighlight,
     InlineScrubbleNumber,
+    InlineToggle,
     InteractionHintSequence,
 } from "@/components/atoms";
 import { Figure, FigureSlider } from "@/components/molecules";
@@ -16,8 +17,10 @@ import {
     getVariableInfo,
     linkedHighlightPropsFromDefinition,
     numberPropsFromDefinition,
+    togglePropsFromDefinition,
 } from "../variables";
 import { ACCENT, INK, INK_SOFT } from "./electronModel";
+import { AddressBuildingFigure } from "./electronAddressFigure";
 
 // ── Atom zoom model ─────────────────────────────────────────────────────────
 // Lengths are in picometres. The view half-width shrinks exponentially with the
@@ -371,14 +374,55 @@ export const whereElectronsLiveBlocks: ReactElement[] = [
         </Block>
     </StackLayout>,
 
+    <StackLayout key="layout-electrons-live-address-building" maxWidth="xl">
+        <Block id="electrons-live-address-building" padding="sm" hasVisualization>
+            <AddressBuildingFigure />
+        </Block>
+    </StackLayout>,
+
     <StackLayout key="layout-electrons-live-addresses" maxWidth="xl">
         <Block id="electrons-live-addresses" padding="sm">
             <EditableParagraph id="para-electrons-live-addresses" blockId="electrons-live-addresses">
                 Over the next few sections we will build up the full address of an electron, one
-                level of detail at a time: first the floor it lives on (the shell), then the room
-                on that floor (the subshell), then the exact desk in that room (the orbital).
-                Once you can read that address, writing an electron configuration is just writing
-                the addresses down in order.
+                level of detail at a time: first the floor it lives on (the{" "}
+                <InlineLinkedHighlight
+                    id="highlight-electrons-live-shell"
+                    varName="addressHighlight"
+                    highlightId="floor"
+                    showHint={false}
+                    {...linkedHighlightPropsFromDefinition(getVariableInfo("addressHighlight"))}
+                >
+                    shell
+                </InlineLinkedHighlight>
+                ), then the room on that floor (the{" "}
+                <InlineLinkedHighlight
+                    id="highlight-electrons-live-subshell"
+                    varName="addressHighlight"
+                    highlightId="room"
+                    showHint={false}
+                    {...linkedHighlightPropsFromDefinition(getVariableInfo("addressHighlight"))}
+                >
+                    subshell
+                </InlineLinkedHighlight>
+                ), then the exact desk in that room (the{" "}
+                <InlineLinkedHighlight
+                    id="highlight-electrons-live-orbital"
+                    varName="addressHighlight"
+                    highlightId="desk"
+                    showHint={false}
+                    {...linkedHighlightPropsFromDefinition(getVariableInfo("addressHighlight"))}
+                >
+                    orbital
+                </InlineLinkedHighlight>
+                ). The building above is drawn down to the{" "}
+                <InlineToggle
+                    id="toggle-electrons-live-address-level"
+                    varName="addressLevel"
+                    options={["floor", "room", "desk"]}
+                    {...togglePropsFromDefinition(getVariableInfo("addressLevel"))}
+                />{" "}
+                level so far. Once you can read that address, writing an electron configuration is
+                just writing the addresses down in order.
             </EditableParagraph>
         </Block>
     </StackLayout>,

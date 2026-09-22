@@ -52,8 +52,7 @@
     "writing-configurations-builder-intro",
     "writing-configurations-builder",
     "writing-configurations-check",
-    "writing-configurations-question",
-    "block-1790090588026"
+    "writing-configurations-question"
   ],
   "rows": [
     {
@@ -629,18 +628,6 @@
       "columns": [
         [
           "writing-configurations-question"
-        ]
-      ],
-      "props": {
-        "maxWidth": "xl"
-      }
-    },
-    {
-      "id": "layout-block-1790090588026",
-      "type": "stack",
-      "columns": [
-        [
-          "block-1790090588026"
         ]
       ],
       "props": {

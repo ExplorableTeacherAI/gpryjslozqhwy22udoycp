@@ -196,9 +196,7 @@ function FloorRoomsReadout() {
 export const subshellsBlocks: ReactElement[] = [
     <StackLayout key="layout-subshells-heading" maxWidth="xl">
         <Block id="subshells-heading" padding="sm">
-            <EditableH2 id="h2-subshells-heading" blockId="subshells-heading">
-                3. Subshells: the rooms on each floor
-            </EditableH2>
+            <EditableH2 id="h2-subshells-heading" blockId="subshells-heading">Subshells: the rooms on each floor</EditableH2>
         </Block>
     </StackLayout>,
 

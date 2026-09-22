@@ -187,7 +187,7 @@ export const variableDefinitions: Record<string, VariableDefinition> = {
         label: 'Selected floor',
         description: 'Which shell (floor) is opened up to show its rooms',
         options: ['1', '2', '3', '4'],
-        color: '#D946EF',
+        color: '#62CCF9',
     },
     subshellThirdRoomAnswer: {
         defaultValue: '',
@@ -204,7 +204,7 @@ export const variableDefinitions: Record<string, VariableDefinition> = {
     // Section 4 — Orbitals
     // ─────────────────────────────────────────
     orbitalSpinning: {
-        defaultValue: false,
+        defaultValue: true,
         type: 'boolean',
         label: 'Orbitals spinning',
         description: 'Play state of the 3D orbital-shape figure: slowly rotates all orbitals while true',

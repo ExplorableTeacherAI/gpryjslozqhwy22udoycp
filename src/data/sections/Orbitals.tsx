@@ -10,7 +10,6 @@ import {
     InlineLinkedHighlight,
     InlineToggle,
     InteractionHintSequence,
-    Table,
 } from "@/components/atoms";
 import { Figure } from "@/components/molecules";
 import { useVar, useSetVar } from "@/stores";
@@ -23,8 +22,6 @@ import {
 } from "../variables";
 import { OrbitalShapesFigure } from "./orbitalShapesFigure";
 import {
-    ACCENT,
-    ACCENT_SOFT,
     INK,
     INK_SOFT,
     INK_FAINT,
@@ -50,12 +47,12 @@ const asRoom = (value: string): RoomLetter => (ROOMS.includes(value as RoomLette
 const asBoxes = (value: unknown): number[] =>
     Array.isArray(value) ? EMPTY_BOXES.map((_, index) => Number(value[index]) || 0) : EMPTY_BOXES;
 
-function ElectronArrow({ x, y, up }: { x: number; y: number; up: boolean }) {
+function ElectronArrow({ x, y, up, color }: { x: number; y: number; up: boolean; color: string }) {
     const head = up ? y - 16 : y + 16;
     const tail = up ? y + 16 : y - 16;
     const barb = up ? head + 7 : head - 7;
     return (
-        <g stroke={ACCENT} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <g stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none">
             <line x1={x} y1={tail} x2={x} y2={head} />
             <polyline points={`${x - 6},${barb} ${x},${head} ${x + 6},${barb}`} />
         </g>
@@ -66,11 +63,13 @@ function OrbitalBox({
     x,
     index,
     electrons,
+    color,
     onAdd,
 }: {
     x: number;
     index: number;
     electrons: number;
+    color: string;
     onAdd: (index: number) => boolean;
 }) {
     const [hover, setHover] = useState(false);
@@ -101,12 +100,12 @@ function OrbitalBox({
                 width={BOX}
                 height={BOX}
                 rx="8"
-                fill={full ? ACCENT_SOFT : PAPER_TINT}
-                stroke={refused ? REFUSE_COLOR : full ? ACCENT : INK_SOFT}
+                fill={full ? `${color}2E` : PAPER_TINT}
+                stroke={refused ? REFUSE_COLOR : full ? color : INK_SOFT}
                 strokeWidth={refused ? 3 : 2}
             />
-            {electrons >= 1 && <ElectronArrow x={x + BOX / 2 - 12} y={BOX_Y + BOX / 2} up />}
-            {electrons >= 2 && <ElectronArrow x={x + BOX / 2 + 12} y={BOX_Y + BOX / 2} up={false} />}
+            {electrons >= 1 && <ElectronArrow x={x + BOX / 2 - 12} y={BOX_Y + BOX / 2} up color={color} />}
+            {electrons >= 2 && <ElectronArrow x={x + BOX / 2 + 12} y={BOX_Y + BOX / 2} up={false} color={color} />}
             {refused && (
                 <text x={x + BOX / 2} y={BOX_Y - 10} textAnchor="middle" fontSize="11" fill={REFUSE_COLOR} fontWeight={600}>
                     full — two per desk
@@ -135,11 +134,11 @@ function RoomTab({ room, selected, onSelect, x }: { room: RoomLetter; selected: 
                 width={72}
                 height={28}
                 rx="14"
-                fill={selected ? INK : PAPER_TINT}
-                stroke={selected ? INK : INK_FAINT}
+                fill={selected ? roomColor(room) : PAPER_TINT}
+                stroke={roomColor(room)}
                 strokeWidth="1.5"
             />
-            <text x={x + 36} y={46} textAnchor="middle" fontSize="12" fill={selected ? "#FFFFFF" : INK} fontWeight={600}>
+            <text x={x + 36} y={46} textAnchor="middle" fontSize="12" fill={selected ? "#FFFFFF" : roomColor(room)} fontWeight={600}>
                 {`${room} room`}
             </text>
         </g>
@@ -183,7 +182,7 @@ function OrbitalBoxesDrawing() {
                 y={46}
                 textAnchor="end"
                 fontSize="12"
-                fill={placed === capacity ? ACCENT : INK_SOFT}
+                fill={placed === capacity ? roomColor(room) : INK_SOFT}
                 fontWeight={placed === capacity ? 700 : 400}
                 style={{ fontVariantNumeric: "tabular-nums" }}
             >
@@ -196,6 +195,7 @@ function OrbitalBoxesDrawing() {
                     x={startX + index * (BOX + BOX_GAP)}
                     index={index}
                     electrons={boxes[index]}
+                    color={roomColor(room)}
                     onAdd={addElectron}
                 />
             ))}
@@ -208,7 +208,9 @@ function OrbitalBoxesDrawing() {
                 fill={INK}
                 style={{ fontVariantNumeric: "tabular-nums" }}
             >
-                {`the ${room} room: ${deskCount} desk${deskCount === 1 ? "" : "s"} × 2 electrons = ${capacity} electrons`}
+                <tspan>the </tspan>
+                <tspan fill={roomColor(room)} fontWeight={700}>{`${room} room`}</tspan>
+                <tspan>{`: ${deskCount} desk${deskCount === 1 ? "" : "s"} × 2 electrons = ${capacity} electrons`}</tspan>
             </text>
             <text x={VIEW.width / 2} y={VIEW.height - 20} textAnchor="middle" fontSize="11" fill={INK_FAINT}>
                 click a desk to seat an electron
@@ -231,6 +233,21 @@ function OrbitalBoxesFigure() {
                 steps={[{ gesture: "click", label: "Click a desk to add an electron", position: { x: "50%", y: "40%" } }]}
             />
         </Figure>
+    );
+}
+
+/** The room toggle, coloured like the room it currently shows. */
+function RoomToggle() {
+    const room = asRoom(useVar<string>("orbitalRoom", "p"));
+    return (
+        <InlineToggle
+            id="toggle-orbitals-room"
+            varName="orbitalRoom"
+            options={["s", "p", "d"]}
+            {...togglePropsFromDefinition(getVariableInfo("orbitalRoom"))}
+            color={roomColor(room)}
+            bgColor={roomColorSoft(room)}
+        />
     );
 }
 
@@ -369,12 +386,7 @@ export const orbitalsBlocks: ReactElement[] = [
             <EditableParagraph id="para-orbitals-counting" blockId="orbitals-counting">
                 That single rule explains every capacity number in this lesson. Rooms differ only
                 in how many desks they contain: the{" "}
-                <InlineToggle
-                    id="toggle-orbitals-room"
-                    varName="orbitalRoom"
-                    options={["s", "p", "d"]}
-                    {...togglePropsFromDefinition(getVariableInfo("orbitalRoom"))}
-                />{" "}
+                <RoomToggle />{" "}
                 room <RoomDesksReadout />. Multiply the number of desks by two and you get how
                 many electrons the room holds.
             </EditableParagraph>

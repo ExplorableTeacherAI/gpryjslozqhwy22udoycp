@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Line, Text } from "@react-three/drei";
+import { Billboard, Line, Text } from "@react-three/drei";
 import * as THREE from "three";
 import { InteractionHintSequence } from "@/components/atoms";
 import { Figure } from "@/components/molecules";
@@ -94,15 +94,12 @@ function Axes({ dimmed }: { dimmed: boolean }) {
                         color={color}
                         lineWidth={1.2}
                     />
-                    <Text
-                        position={axis.end.map((v) => v * 1.16) as [number, number, number]}
-                        fontSize={0.26}
-                        color={dimmed ? "#CBD5E1" : INK}
-                        anchorX="center"
-                        anchorY="middle"
-                    >
-                        {axis.name}
-                    </Text>
+                    {/* Billboard: the letter always faces the viewer, so it never reads mirrored */}
+                    <Billboard position={axis.end.map((v) => v * 1.16) as [number, number, number]}>
+                        <Text fontSize={0.26} color={dimmed ? "#CBD5E1" : INK} anchorX="center" anchorY="middle">
+                            {axis.name}
+                        </Text>
+                    </Billboard>
                 </group>
             ))}
         </group>
@@ -178,7 +175,7 @@ function SpinWhenIdle({ rotation, spinning, dragging }: { rotation: React.Mutabl
 function OrbitalShapesScene({ resetRef }: { resetRef: React.MutableRefObject<(() => void) | null> }) {
     const setVar = useSetVar();
     const highlight = useVar<string>("orbitalShapeHighlight", "");
-    const spinning = useVar<boolean>("orbitalSpinning", false);
+    const spinning = useVar<boolean>("orbitalSpinning", true);
     // Face-on to start: z up, x across, y towards the viewer.
     const rotation = useRef({ yaw: 0, pitch: 0 });
     const [dragging, setDragging] = useState(false);
@@ -235,11 +232,11 @@ export function OrbitalShapesFigure() {
             playable
             playVarName="orbitalSpinning"
             onReset={() => {
-                setVar("orbitalSpinning", false);
+                setVar("orbitalSpinning", true);
                 setVar("orbitalShapeHighlight", "");
                 resetRotation.current?.();
             }}
-            caption="The one s orbital, the three p orbitals and the five d orbitals, each on its own x, y, z axes, seen face-on with z pointing up. Drag anywhere to turn them all together; press play to let them spin. Every p orbital is the same dumbbell pointing along a different axis, and four of the d orbitals are the same cloverleaf in different planes — only dz² looks different."
+            caption="The one s orbital, the three p orbitals and the five d orbitals, each on its own x, y, z axes, seen face-on with z pointing up. They turn slowly by themselves; drag anywhere to turn them yourself, or pause them. Every p orbital is the same dumbbell pointing along a different axis, and four of the d orbitals are the same cloverleaf in different planes — only dz² looks different."
         >
             <OrbitalShapesScene resetRef={resetRotation} />
             <InteractionHintSequence

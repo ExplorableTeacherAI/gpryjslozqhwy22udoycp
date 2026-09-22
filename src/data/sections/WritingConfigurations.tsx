@@ -16,17 +16,17 @@ import { clamp, useSpring } from "@/lib/motion";
 import { getVariableInfo, clozePropsFromDefinition, numberPropsFromDefinition } from "../variables";
 import {
     ACCENT,
-    ACCENT_SOFT,
     INK,
     INK_SOFT,
     INK_FAINT,
     PAPER_TINT,
     ORBITALS_PER_ROOM,
-    configurationText,
     elementFor,
     fillSubshells,
     superscript,
     type Subshell,
+    roomColor,
+    roomColorSoft,
 } from "./electronModel";
 import { StepButton } from "./electronFigureParts";
 
@@ -91,14 +91,14 @@ function SubshellRow({
                 strokeWidth="2"
             />
             {/* Soft pointer to the subshell that should be filled next */}
-            <circle cx={ROW_LABEL_X - 30} cy={y} r={4} fill={ACCENT} opacity={glow} />
+            <circle cx={ROW_LABEL_X - 30} cy={y} r={4} fill={roomColor(subshell.room)} opacity={glow} />
             <text
                 x={ROW_LABEL_X}
                 y={y + 5}
                 textAnchor="end"
                 fontSize="14"
-                fill={full ? ACCENT : INK}
-                fontWeight={full || isNext ? 700 : 500}
+                fill={roomColor(subshell.room)}
+                fontWeight={full || isNext ? 800 : 600}
                 style={{ fontVariantNumeric: "tabular-nums" }}
             >
                 {subshell.key}
@@ -114,12 +114,12 @@ function SubshellRow({
                             width={SLOT}
                             height={SLOT}
                             rx="4"
-                            fill={inSlot > 0 ? ACCENT_SOFT : PAPER_TINT}
-                            stroke={inSlot > 0 ? ACCENT : INK_FAINT}
+                            fill={inSlot > 0 ? roomColorSoft(subshell.room) : PAPER_TINT}
+                            stroke={inSlot > 0 ? roomColor(subshell.room) : INK_FAINT}
                             strokeWidth="1.2"
                         />
-                        {inSlot >= 1 && <circle cx={slotX + SLOT * 0.32} cy={y} r="3.5" fill={ACCENT} />}
-                        {inSlot >= 2 && <circle cx={slotX + SLOT * 0.68} cy={y} r="3.5" fill={ACCENT} />}
+                        {inSlot >= 1 && <circle cx={slotX + SLOT * 0.32} cy={y} r="3.5" fill={roomColor(subshell.room)} />}
+                        {inSlot >= 2 && <circle cx={slotX + SLOT * 0.68} cy={y} r="3.5" fill={roomColor(subshell.room)} />}
                     </g>
                 );
             })}
@@ -233,7 +233,20 @@ function ConfigurationBuilderDrawing() {
                 fontWeight={600}
                 style={{ fontVariantNumeric: "tabular-nums" }}
             >
-                {placed === 0 ? "—" : `${element.symbol}: ${configurationText(placed)}`}
+                {placed === 0 ? (
+                    "—"
+                ) : (
+                    <>
+                        <tspan>{`${element.symbol}: `}</tspan>
+                        {occupancy
+                            .filter((o) => o.electrons > 0)
+                            .map((o) => (
+                                <tspan key={o.subshell.key} fill={roomColor(o.subshell.room)}>
+                                    {`${o.subshell.key}${superscript(o.electrons)} `}
+                                </tspan>
+                            ))}
+                    </>
+                )}
             </text>
             <text
                 x={VIEW.width - 24}
@@ -286,8 +299,15 @@ function ElementNameReadout() {
 function ConfigurationReadout() {
     const atomicNumber = clamp(Math.round(useVar<number>("atomicNumber", 16)), 1, MAX_Z);
     return (
-        <span style={{ fontWeight: 600, color: INK, fontVariantNumeric: "tabular-nums" }}>
-            {configurationText(atomicNumber)}
+        <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+            {fillSubshells(atomicNumber)
+                .filter((o) => o.electrons > 0)
+                .map((o, index) => (
+                    <span key={o.subshell.key} style={{ color: roomColor(o.subshell.room) }}>
+                        {index > 0 ? " " : ""}
+                        {`${o.subshell.key}${superscript(o.electrons)}`}
+                    </span>
+                ))}
         </span>
     );
 }
@@ -318,8 +338,8 @@ export const writingConfigurationsBlocks: ReactElement[] = [
             <EditableParagraph id="para-writing-configurations-notation" blockId="writing-configurations-notation">
                 An electron configuration is just the list of occupied addresses, written in
                 filling order, with the number of electrons in each subshell written as a small
-                raised number. So <InlineFormula latex="2p^4" /> means four electrons in the{" "}
-                <InlineFormula latex="p" /> room on floor 2.
+                raised number. So <InlineFormula latex="\clr{roomP}{2p^4}" colorMap={{ roomP: roomColor("p") }} /> means four electrons in the{" "}
+                <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} /> room on floor 2.
             </EditableParagraph>
         </Block>
     </StackLayout>,
@@ -339,17 +359,20 @@ export const writingConfigurationsBlocks: ReactElement[] = [
         <Block id="writing-configurations-worked" padding="sm">
             <EditableParagraph id="para-writing-configurations-worked" blockId="writing-configurations-worked">
                 Take sulfur, which has 16 electrons. Put 2 into{" "}
-                <InlineFormula latex="1s" /> (14 left), 2 into <InlineFormula latex="2s" />{" "}
-                (12 left), 6 into <InlineFormula latex="2p" /> (6 left), 2 into{" "}
-                <InlineFormula latex="3s" /> (4 left), and the last 4 go into{" "}
-                <InlineFormula latex="3p" />, which could have taken 6. Writing that out gives:
+                <InlineFormula latex="\clr{roomS}{1s}" colorMap={{ roomS: roomColor("s") }} /> (14 left), 2 into <InlineFormula latex="\clr{roomS}{2s}" colorMap={{ roomS: roomColor("s") }} />{" "}
+                (12 left), 6 into <InlineFormula latex="\clr{roomP}{2p}" colorMap={{ roomP: roomColor("p") }} /> (6 left), 2 into{" "}
+                <InlineFormula latex="\clr{roomS}{3s}" colorMap={{ roomS: roomColor("s") }} /> (4 left), and the last 4 go into{" "}
+                <InlineFormula latex="\clr{roomP}{3p}" colorMap={{ roomP: roomColor("p") }} />, which could have taken 6. Writing that out gives:
             </EditableParagraph>
         </Block>
     </StackLayout>,
 
     <StackLayout key="layout-writing-configurations-sulfur" maxWidth="xl">
         <Block id="writing-configurations-sulfur" padding="lg">
-            <FormulaBlock latex="\text{S} : \; 1s^2 \, 2s^2 \, 2p^6 \, 3s^2 \, 3p^4" />
+            <FormulaBlock
+                latex="\text{S} : \; \clr{roomS}{1s^2} \, \clr{roomS}{2s^2} \, \clr{roomP}{2p^6} \, \clr{roomS}{3s^2} \, \clr{roomP}{3p^4}"
+                colorMap={{ roomS: roomColor("s"), roomP: roomColor("p"), roomD: roomColor("d"), roomF: roomColor("f") }}
+            />
         </Block>
     </StackLayout>,
 
@@ -357,7 +380,7 @@ export const writingConfigurationsBlocks: ReactElement[] = [
         <Block id="writing-configurations-builder-intro" padding="sm">
             <EditableParagraph id="para-writing-configurations-builder-intro" blockId="writing-configurations-builder-intro">
                 Now do the handing-out yourself. The builder starts with sulfur's 16 electrons
-                waiting to be placed. Click <InlineFormula latex="1s" /> first, then keep clicking
+                waiting to be placed. Click <InlineFormula latex="\clr{roomS}{1s}" colorMap={{ roomS: roomColor("s") }} /> first, then keep clicking
                 the next subshell in the filling order — a click on the wrong subshell is refused,
                 and the configuration is written underneath as you go.
             </EditableParagraph>
@@ -381,7 +404,7 @@ export const writingConfigurationsBlocks: ReactElement[] = [
                 />
                 , which is <ElementNameReadout />, the full configuration is{" "}
                 <ConfigurationReadout />, and the raised numbers add to <ConfigurationSumReadout />.
-                Beyond calcium the <InlineFormula latex="3d" /> room starts to fill, and the same
+                Beyond calcium the <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} /> room starts to fill, and the same
                 method still works — you simply carry on down the filling order.
             </EditableParagraph>
         </Block>
@@ -391,7 +414,7 @@ export const writingConfigurationsBlocks: ReactElement[] = [
         <Block id="writing-configurations-question" padding="sm">
             <EditableParagraph id="para-writing-configurations-question" blockId="writing-configurations-question">
                 Chlorine has one more electron than sulfur, 17 in all. Without using the builder,
-                its configuration ends in <InlineFormula latex="3p" /> with a raised number of{" "}
+                its configuration ends in <InlineFormula latex="\clr{roomP}{3p}" colorMap={{ roomP: roomColor("p") }} /> with a raised number of{" "}
                 <InlineFeedback
                     varName="chlorineLastCountAnswer"
                     correctValue="5"

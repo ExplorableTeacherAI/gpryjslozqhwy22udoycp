@@ -5,13 +5,14 @@ import { useVar, useSetVar } from "@/stores";
 import { useSpring } from "@/lib/motion";
 import {
     ACCENT,
-    ACCENT_SOFT,
     INK,
     INK_SOFT,
     INK_FAINT,
     PAPER_TINT,
     N_COLOR,
     ORBITALS_PER_ROOM,
+    roomColor,
+    roomColorSoft,
     roomsOnFloor,
     type RoomLetter,
 } from "./electronModel";
@@ -249,15 +250,15 @@ function AddressBuildingDrawing() {
                                     >
                                         {/* Halo around the selected room while "subshell" is hovered */}
                                         {isSelectedRoom && highlight === "room" && (
-                                            <rect x={x - 5} y={ceiling - 5} width={width + 10} height={floorY - ceiling + 10} rx="6" fill="none" stroke={ACCENT} strokeWidth="8" strokeOpacity="0.28" />
+                                            <rect x={x - 5} y={ceiling - 5} width={width + 10} height={floorY - ceiling + 10} rx="6" fill="none" stroke={roomColor(room)} strokeWidth="8" strokeOpacity="0.28" />
                                         )}
                                         <rect
                                             x={x}
                                             y={ceiling}
                                             width={width}
                                             height={floorY - ceiling}
-                                            fill={isSelectedRoom && highlight !== "desk" ? ACCENT_SOFT : "#FFFFFF"}
-                                            stroke={isSelectedRoom && highlight !== "desk" ? ACCENT : INK_SOFT}
+                                            fill={isSelectedRoom && highlight !== "desk" ? roomColorSoft(room) : "#FFFFFF"}
+                                            stroke={isSelectedRoom && highlight !== "desk" ? roomColor(room) : INK_SOFT}
                                             strokeWidth={isSelectedRoom && highlight !== "desk" ? (highlight === "room" ? 4 : 2.5) : 1.5}
                                         />
                                         {/* door in the room's left wall (hidden once the desks are shown) */}
@@ -265,8 +266,8 @@ function AddressBuildingDrawing() {
                                             <rect x={x + 3} y={floorY - 24} width="9" height="24" rx="1.5" fill={PAPER_TINT} stroke={INK_SOFT} strokeWidth="1" />
                                         )}
                                         {/* name plate above the door */}
-                                        <rect x={x + 3} y={ceiling + 4} width="24" height="14" rx="2" fill={isSelectedRoom && highlight !== "desk" ? INK : PAPER_TINT} stroke={INK_SOFT} strokeWidth="1" opacity={highlight === "desk" ? 0.4 : 1} />
-                                        <text x={x + 15} y={ceiling + 14.5} textAnchor="middle" fontSize="10" fill={isSelectedRoom && highlight !== "desk" ? "#FFFFFF" : INK} fontWeight={700} opacity={highlight === "desk" ? 0.4 : 1}>
+                                        <rect x={x + 3} y={ceiling + 4} width="24" height="14" rx="2" fill={isSelectedRoom && highlight !== "desk" ? roomColor(room) : PAPER_TINT} stroke={roomColor(room)} strokeWidth="1" opacity={highlight === "desk" ? 0.4 : 1} />
+                                        <text x={x + 15} y={ceiling + 14.5} textAnchor="middle" fontSize="10" fill={isSelectedRoom && highlight !== "desk" ? "#FFFFFF" : roomColor(room)} fontWeight={700} opacity={highlight === "desk" ? 0.4 : 1}>
                                             {`${n}${room}`}
                                         </text>
                                         {/* Room-level view: people standing in the room */}
@@ -317,7 +318,7 @@ function AddressBuildingDrawing() {
                 </text>
                 <text x={24} y={42} fontWeight={600}>
                     <tspan opacity={dim("floor")} fontWeight={highlight === "floor" ? 800 : 600}>{`floor ${selected.n}`}</tspan>
-                    {showRooms && <tspan opacity={dim("room")} fontWeight={highlight === "room" ? 800 : 600}>{` → room ${selected.n}${selected.room}`}</tspan>}
+                    {showRooms && <tspan opacity={dim("room")} fontWeight={highlight === "room" ? 800 : 600}> → room <tspan fill={roomColor(selected.room)}>{`${selected.n}${selected.room}`}</tspan></tspan>}
                     {showDesks && <tspan opacity={dim("desk")} fontWeight={highlight === "desk" ? 800 : 600}>{` → desk ${selected.desk}`}</tspan>}
                 </text>
                 <text x={VIEW.width - 24} y={VIEW.height - 22} textAnchor="end" fontSize="11" fill={INK_FAINT}>

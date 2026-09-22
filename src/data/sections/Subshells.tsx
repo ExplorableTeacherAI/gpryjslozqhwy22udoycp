@@ -9,13 +9,12 @@ import {
     InlineFeedback,
     InlineToggle,
     InteractionHintSequence,
-    Table,
 } from "@/components/atoms";
 import { Figure } from "@/components/molecules";
 import { useVar, useSetVar } from "@/stores";
 import { useSpring } from "@/lib/motion";
 import { getVariableInfo, choicePropsFromDefinition, togglePropsFromDefinition } from "../variables";
-import { ACCENT, ACCENT_SOFT, INK, INK_SOFT, INK_FAINT, PAPER_TINT, N_COLOR, roomsOnFloor } from "./electronModel";
+import { INK, INK_SOFT, INK_FAINT, PAPER_TINT, N_COLOR, roomsOnFloor, roomColor, roomColorSoft } from "./electronModel";
 
 // ── Building layout ─────────────────────────────────────────────────────────
 const VIEW = { width: 560, height: 340 };
@@ -78,8 +77,8 @@ function Floor({ n, selected, onSelect }: { n: number; selected: boolean; onSele
                             width={ROOM_WIDTH}
                             height={ROOM_HEIGHT}
                             rx="6"
-                            fill={selected ? ACCENT_SOFT : PAPER_TINT}
-                            stroke={selected ? ACCENT : INK_FAINT}
+                            fill={selected ? roomColorSoft(room) : PAPER_TINT}
+                            stroke={selected ? roomColor(room) : INK_FAINT}
                             strokeWidth={selected ? 2.5 : 1.5}
                         />
                         <text
@@ -87,7 +86,7 @@ function Floor({ n, selected, onSelect }: { n: number; selected: boolean; onSele
                             y={y + ROOM_HEIGHT / 2 + 5}
                             textAnchor="middle"
                             fontSize="15"
-                            fill={INK}
+                            fill={selected ? roomColor(room) : INK}
                             fontWeight={selected ? 700 : 500}
                         >
                             {`${n}${room}`}
@@ -180,11 +179,16 @@ function SubshellFloorsFigure() {
 
 function FloorRoomsReadout() {
     const n = Number(useVar<string>("subshellFloor", "2"));
-    const rooms = roomsOnFloor(n).map((room) => `${n}${room}`);
-    const list = rooms.length === 1 ? rooms[0] : `${rooms.slice(0, -1).join(", ")} and ${rooms[rooms.length - 1]}`;
+    const rooms = roomsOnFloor(n);
     return (
         <span>
-            has {rooms.length} room{rooms.length === 1 ? "" : "s"}: <span style={{ fontWeight: 600, color: INK }}>{list}</span>
+            has {rooms.length} room{rooms.length === 1 ? "" : "s"}:{" "}
+            {rooms.map((room, index) => (
+                <span key={room}>
+                    {index > 0 && (index === rooms.length - 1 ? " and " : ", ")}
+                    <span style={{ fontWeight: 600, color: roomColor(room) }}>{`${n}${room}`}</span>
+                </span>
+            ))}
         </span>
     );
 }
@@ -203,8 +207,8 @@ export const subshellsBlocks: ReactElement[] = [
             <EditableParagraph id="para-subshells-definition" blockId="subshells-definition">
                 A floor of a building is not one big open space — it is divided into rooms. In
                 the same way, a shell is divided into subshells. The rooms have names rather than
-                numbers: <InlineFormula latex="s" />, <InlineFormula latex="p" />,{" "}
-                <InlineFormula latex="d" /> and <InlineFormula latex="f" />. Electrons in
+                numbers: <InlineFormula latex="\clr{roomS}{s}" colorMap={{ roomS: roomColor("s") }} />, <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} />,{" "}
+                <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> and <InlineFormula latex="\clr{roomF}{f}" colorMap={{ roomF: roomColor("f") }} />. Electrons in
                 different rooms on the same floor have slightly different energies.
             </EditableParagraph>
         </Block>
@@ -229,8 +233,8 @@ export const subshellsBlocks: ReactElement[] = [
                     {...togglePropsFromDefinition(getVariableInfo("subshellFloor"))}
                 />{" "}
                 <FloorRoomsReadout />. The rooms are always added in the order{" "}
-                <InlineFormula latex="s" />, then <InlineFormula latex="p" />, then{" "}
-                <InlineFormula latex="d" />, then <InlineFormula latex="f" />.
+                <InlineFormula latex="\clr{roomS}{s}" colorMap={{ roomS: roomColor("s") }} />, then <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} />, then{" "}
+                <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} />, then <InlineFormula latex="\clr{roomF}{f}" colorMap={{ roomF: roomColor("f") }} />.
             </EditableParagraph>
         </Block>
     </StackLayout>,
@@ -239,8 +243,8 @@ export const subshellsBlocks: ReactElement[] = [
         <Block id="subshells-naming" padding="sm">
             <EditableParagraph id="para-subshells-naming" blockId="subshells-naming">
                 A subshell is named by writing its floor number in front of its room letter. So{" "}
-                <InlineFormula latex="2p" /> means the <InlineFormula latex="p" /> room on floor
-                2, and <InlineFormula latex="3d" /> means the <InlineFormula latex="d" /> room on
+                <InlineFormula latex="\clr{roomP}{2p}" colorMap={{ roomP: roomColor("p") }} /> means the <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} /> room on floor
+                2, and <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} /> means the <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> room on
                 floor 3. That two-part name is already most of an electron's address.
             </EditableParagraph>
         </Block>

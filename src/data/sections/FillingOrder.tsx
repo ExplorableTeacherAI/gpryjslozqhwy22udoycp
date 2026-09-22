@@ -15,8 +15,6 @@ import { useVar, useSetVar } from "@/stores";
 import { clamp, useSpring } from "@/lib/motion";
 import { getVariableInfo, choicePropsFromDefinition, numberPropsFromDefinition } from "../variables";
 import {
-    ACCENT,
-    INK,
     INK_SOFT,
     INK_FAINT,
     PAPER_TINT,
@@ -26,6 +24,7 @@ import {
     fillSubshells,
     lastFilledSubshell,
     type Subshell,
+    roomColor,
 } from "./electronModel";
 import { StepButton } from "./electronFigureParts";
 
@@ -57,7 +56,7 @@ function Rung({ subshell, electrons, newest }: { subshell: Subshell; electrons: 
                 y1={y}
                 x2={x + width + 4}
                 y2={y}
-                stroke={ACCENT}
+                stroke={roomColor(subshell.room)}
                 strokeWidth={10}
                 strokeOpacity={0.28 * pop}
                 strokeLinecap="round"
@@ -67,8 +66,9 @@ function Rung({ subshell, electrons, newest }: { subshell: Subshell; electrons: 
                 y1={y}
                 x2={x + width}
                 y2={y}
-                stroke={electrons === subshell.capacity ? ACCENT : INK_SOFT}
-                strokeWidth={electrons === subshell.capacity ? 2.5 : 2}
+                stroke={roomColor(subshell.room)}
+                strokeWidth={electrons === subshell.capacity ? 3 : 2}
+                strokeOpacity={electrons === subshell.capacity ? 1 : 0.6}
                 strokeLinecap="round"
             />
             {Array.from({ length: orbitals }, (_, index) => {
@@ -77,8 +77,8 @@ function Rung({ subshell, electrons, newest }: { subshell: Subshell; electrons: 
                 return (
                     <g key={index}>
                         <rect x={slotX} y={y - SLOT - 2} width={SLOT} height={SLOT} rx="3" fill={PAPER_TINT} stroke={INK_FAINT} strokeWidth="1" />
-                        {inSlot >= 1 && <circle cx={slotX + SLOT * 0.32} cy={y - SLOT / 2 - 2} r="3.5" fill={ACCENT} />}
-                        {inSlot >= 2 && <circle cx={slotX + SLOT * 0.68} cy={y - SLOT / 2 - 2} r="3.5" fill={ACCENT} />}
+                        {inSlot >= 1 && <circle cx={slotX + SLOT * 0.32} cy={y - SLOT / 2 - 2} r="3.5" fill={roomColor(subshell.room)} />}
+                        {inSlot >= 2 && <circle cx={slotX + SLOT * 0.68} cy={y - SLOT / 2 - 2} r="3.5" fill={roomColor(subshell.room)} />}
                     </g>
                 );
             })}
@@ -87,8 +87,8 @@ function Rung({ subshell, electrons, newest }: { subshell: Subshell; electrons: 
                 y={y - 6}
                 textAnchor="end"
                 fontSize="13"
-                fill={newest ? ACCENT : INK}
-                fontWeight={newest ? 700 : 500}
+                fill={roomColor(subshell.room)}
+                fontWeight={newest ? 800 : 600}
                 style={{ fontVariantNumeric: "tabular-nums" }}
             >
                 {subshell.key}
@@ -195,7 +195,7 @@ function NewestSubshellReadout() {
     if (!newest) return <span>no subshell yet — the ladder is empty</span>;
     return (
         <span>
-            the <span style={{ fontWeight: 600, color: INK }}>{newest.key}</span> rung
+            the <span style={{ fontWeight: 700, color: roomColor(newest.room) }}>{newest.key}</span> rung
         </span>
     );
 }
@@ -236,7 +236,7 @@ export const fillingOrderBlocks: ReactElement[] = [
                 />{" "}
                 electrons on the ladder, the newest one sits on <NewestSubshellReadout />. Keep
                 adding past 18 and watch the nineteenth electron: it skips the empty{" "}
-                <InlineFormula latex="3d" /> rung and drops onto <InlineFormula latex="4s" />,
+                <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} /> rung and drops onto <InlineFormula latex="\clr{roomS}{4s}" colorMap={{ roomS: roomColor("s") }} />,
                 because that rung is lower.
             </EditableParagraph>
         </Block>
@@ -244,18 +244,21 @@ export const fillingOrderBlocks: ReactElement[] = [
 
     <StackLayout key="layout-filling-order-sequence" maxWidth="xl">
         <Block id="filling-order-sequence" padding="lg">
-            <FormulaBlock latex="1s \;\rightarrow\; 2s \;\rightarrow\; 2p \;\rightarrow\; 3s \;\rightarrow\; 3p \;\rightarrow\; 4s \;\rightarrow\; 3d \;\rightarrow\; 4p" />
+            <FormulaBlock
+                latex="\clr{roomS}{1s} \;\rightarrow\; \clr{roomS}{2s} \;\rightarrow\; \clr{roomP}{2p} \;\rightarrow\; \clr{roomS}{3s} \;\rightarrow\; \clr{roomP}{3p} \;\rightarrow\; \clr{roomS}{4s} \;\rightarrow\; \clr{roomD}{3d} \;\rightarrow\; \clr{roomP}{4p}"
+                colorMap={{ roomS: roomColor("s"), roomP: roomColor("p"), roomD: roomColor("d"), roomF: roomColor("f") }}
+            />
         </Block>
     </StackLayout>,
 
     <StackLayout key="layout-filling-order-surprise" maxWidth="xl">
         <Block id="filling-order-surprise" padding="sm">
             <EditableParagraph id="para-filling-order-surprise" blockId="filling-order-surprise">
-                Read that list again and one step looks wrong: <InlineFormula latex="4s" /> comes
-                before <InlineFormula latex="3d" />. The order is not simply lowest shell number
+                Read that list again and one step looks wrong: <InlineFormula latex="\clr{roomS}{4s}" colorMap={{ roomS: roomColor("s") }} /> comes
+                before <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} />. The order is not simply lowest shell number
                 first, because the rooms on one floor spread out in energy far enough to overlap
-                the floor above. The <InlineFormula latex="4s" /> room sits slightly lower in
-                energy than the <InlineFormula latex="3d" /> room, so electrons take it first.
+                the floor above. The <InlineFormula latex="\clr{roomS}{4s}" colorMap={{ roomS: roomColor("s") }} /> room sits slightly lower in
+                energy than the <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} /> room, so electrons take it first.
             </EditableParagraph>
         </Block>
     </StackLayout>,
@@ -264,11 +267,11 @@ export const fillingOrderBlocks: ReactElement[] = [
         <Block id="filling-order-rule" padding="sm">
             <EditableParagraph id="para-filling-order-rule" blockId="filling-order-rule">
                 A quick way to remember the sequence: subshells fill in order of the sum of the
-                shell number and the room type, where <InlineFormula latex="s" /> counts as 0,{" "}
-                <InlineFormula latex="p" /> as 1 and <InlineFormula latex="d" /> as 2. For{" "}
-                <InlineFormula latex="4s" /> the sum is <InlineFormula latex="4 + 0 = 4" />, and
-                for <InlineFormula latex="3d" /> it is <InlineFormula latex="3 + 2 = 5" /> — so{" "}
-                <InlineFormula latex="4s" /> fills first. When two subshells give the same sum,
+                shell number and the room type, where <InlineFormula latex="\clr{roomS}{s}" colorMap={{ roomS: roomColor("s") }} /> counts as 0,{" "}
+                <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} /> as 1 and <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> as 2. For{" "}
+                <InlineFormula latex="\clr{roomS}{4s}" colorMap={{ roomS: roomColor("s") }} /> the sum is <InlineFormula latex="4 + 0 = 4" />, and
+                for <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} /> it is <InlineFormula latex="3 + 2 = 5" /> — so{" "}
+                <InlineFormula latex="\clr{roomS}{4s}" colorMap={{ roomS: roomColor("s") }} /> fills first. When two subshells give the same sum,
                 the one with the smaller shell number goes first.
             </EditableParagraph>
         </Block>
@@ -278,7 +281,7 @@ export const fillingOrderBlocks: ReactElement[] = [
         <Block id="filling-order-question" padding="sm">
             <EditableParagraph id="para-filling-order-question" blockId="filling-order-question">
                 Potassium has 19 electrons. After the first 18 fill everything up to{" "}
-                <InlineFormula latex="3p" />, its nineteenth electron goes into{" "}
+                <InlineFormula latex="\clr{roomP}{3p}" colorMap={{ roomP: roomColor("p") }} />, its nineteenth electron goes into{" "}
                 <InlineFeedback
                     varName="fillingNineteenthAnswer"
                     correctValue="4s"

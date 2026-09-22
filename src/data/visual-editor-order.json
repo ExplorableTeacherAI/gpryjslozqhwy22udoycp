@@ -169,20 +169,15 @@
     },
     {
       "id": "layout-shells-fill",
-      "type": "split",
+      "type": "stack",
       "columns": [
         [
-          "shells-fill-reading"
-        ],
-        [
+          "shells-fill-reading",
           "shells-fill"
         ]
       ],
       "props": {
-        "ratio": "1:1",
-        "gap": "lg",
-        "reverse": false,
-        "align": "start"
+        "maxWidth": "xl"
       }
     },
     {

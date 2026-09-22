@@ -302,6 +302,21 @@ export const whereElectronsLiveBlocks: ReactElement[] = [
         </Block>
     </StackLayout>,
 
+    <StackLayout key="layout-electrons-live-intro" maxWidth="xl">
+        <Block id="electrons-live-intro" padding="sm">
+            <EditableParagraph id="para-electrons-live-intro" blockId="electrons-live-intro">
+                Why does sodium explode in water while neon does nothing at all? Both are just
+                a nucleus with electrons around it — the difference is where those electrons
+                sit. An electron configuration is the short code chemists use to say exactly
+                that, and by the end of this lesson you will be able to write one for any of
+                the first 36 elements. We build the idea in layers: the shells electrons live
+                in, the subshells within them, the orbitals within those, and the order in
+                which they fill. Every picture along the way can be dragged, clicked or
+                scrubbed, so try things as you read.
+            </EditableParagraph>
+        </Block>
+    </StackLayout>,
+
     <StackLayout key="layout-electrons-live-heading" maxWidth="xl">
         <Block id="electrons-live-heading" padding="sm">
             <EditableH2 id="h2-electrons-live-heading" blockId="electrons-live-heading">

@@ -8,13 +8,12 @@ import {
     InlineClozeInput,
     InlineFeedback,
     InlineScrubbleNumber,
-    InlineToggle,
     InteractionHintSequence,
 } from "@/components/atoms";
 import { FormulaBlock, Figure, FigureSlider } from "@/components/molecules";
 import { useVar, useSetVar } from "@/stores";
 import { clamp, useSpring } from "@/lib/motion";
-import { getVariableInfo, clozePropsFromDefinition, numberPropsFromDefinition, togglePropsFromDefinition } from "../variables";
+import { getVariableInfo, clozePropsFromDefinition, numberPropsFromDefinition } from "../variables";
 import {
     ACCENT,
     INK,
@@ -292,31 +291,15 @@ function ConfigurationBuilderFigure() {
     );
 }
 
-// ── Worked example: any of a few elements, walked through from the model ──
-const WORKED_ELEMENTS: Record<string, number> = { sulfur: 16, oxygen: 8, sodium: 11, chlorine: 17, calcium: 20, iron: 26 };
-const WORKED_OPTIONS = Object.keys(WORKED_ELEMENTS);
-const workedAtomicNumber = (name: string) => WORKED_ELEMENTS[name] ?? 16;
-
+// ── Worked example: driven by the same atomicNumber as the builder ──
 function useWorkedElement() {
-    const name = useVar<string>("workedElement", "sulfur");
-    const atomicNumber = workedAtomicNumber(name);
-    return { name: WORKED_OPTIONS.includes(name) ? name : "sulfur", atomicNumber, element: elementFor(atomicNumber) };
+    const atomicNumber = clamp(Math.round(useVar<number>("atomicNumber", 16)), 1, MAX_Z);
+    return { atomicNumber, element: elementFor(atomicNumber), name: elementFor(atomicNumber).name.toLowerCase() };
 }
 
-function WorkedElementToggle() {
-    return (
-        <InlineToggle
-            id="toggle-writing-configurations-worked-element"
-            varName="workedElement"
-            options={WORKED_OPTIONS}
-            {...togglePropsFromDefinition(getVariableInfo("workedElement"))}
-        />
-    );
-}
-
-function WorkedElectronCount() {
-    const { atomicNumber } = useWorkedElement();
-    return <span style={{ fontWeight: 600, color: INK, fontVariantNumeric: "tabular-nums" }}>{atomicNumber}</span>;
+function WorkedElementName() {
+    const { name } = useWorkedElement();
+    return <span style={{ fontWeight: 600, color: INK }}>{name}</span>;
 }
 
 /** "Put 2 into 1s (14 left), 2 into 2s (12 left), … and the last 4 go into 3p, which could have taken 6." */
@@ -365,19 +348,9 @@ function WorkedConfigurationFormula() {
     );
 }
 
-/** The builder follows the worked example: changing the element above reloads it. */
-function WorkedElementSync() {
-    const setVar = useSetVar();
+function WorkedElectronCount() {
     const { atomicNumber } = useWorkedElement();
-    useEffect(() => {
-        setVar("atomicNumber", atomicNumber);
-    }, [atomicNumber, setVar]);
-    return null;
-}
-
-function WorkedElementName() {
-    const { name } = useWorkedElement();
-    return <span style={{ fontWeight: 600, color: INK }}>{name}</span>;
+    return <span style={{ fontWeight: 600, color: INK, fontVariantNumeric: "tabular-nums" }}>{atomicNumber}</span>;
 }
 
 function ElementNameReadout() {
@@ -447,8 +420,13 @@ export const writingConfigurationsBlocks: ReactElement[] = [
     <StackLayout key="layout-writing-configurations-worked" maxWidth="xl">
         <Block id="writing-configurations-worked" padding="sm">
             <EditableParagraph id="para-writing-configurations-worked" blockId="writing-configurations-worked">
-                Take <WorkedElementToggle />, which has <WorkedElectronCount /> electrons.{" "}
-                <WorkedHandOut />. Writing that out gives:
+                Take <WorkedElementName />, atomic number{" "}
+                <InlineScrubbleNumber
+                    id="scrub-writing-configurations-worked-atomic-number"
+                    varName="atomicNumber"
+                    {...numberPropsFromDefinition(getVariableInfo("atomicNumber"))}
+                />
+                , so it has that many electrons. <WorkedHandOut />. Writing that out gives:
             </EditableParagraph>
         </Block>
     </StackLayout>,
@@ -462,13 +440,12 @@ export const writingConfigurationsBlocks: ReactElement[] = [
     <StackLayout key="layout-writing-configurations-builder-intro" maxWidth="xl">
         <Block id="writing-configurations-builder-intro" padding="sm">
             <EditableParagraph id="para-writing-configurations-builder-intro" blockId="writing-configurations-builder-intro">
-                Now do the handing-out yourself. The builder below is loaded with{" "}
-                <WorkedElementName />'s <WorkedElectronCount /> electrons — it follows the element
-                chosen above, and the − and + buttons pick any other. Click{" "}
+                Now do the handing-out yourself. The builder below holds <WorkedElementName />'s{" "}
+                <WorkedElectronCount /> electrons — the same element as the example, so changing
+                one changes the other. Click{" "}
                 <InlineFormula latex="\clr{roomS}{1s}" colorMap={{ roomS: roomColor("s") }} /> first, then keep
                 clicking the next subshell in the filling order — a click on the wrong subshell is
                 refused, and the configuration is written underneath as you go.
-                <WorkedElementSync />
             </EditableParagraph>
         </Block>
     </StackLayout>,

@@ -304,7 +304,7 @@ export const whereElectronsLiveBlocks: ReactElement[] = [
 
     <StackLayout key="layout-electrons-live-intro" maxWidth="xl">
         <Block id="electrons-live-intro" padding="sm">
-            <EditableParagraph id="para-electrons-live-intro" blockId="electrons-live-intro">In this lesson you will learn to read and write electron configurations — the short codes, like 1s² 2s² 2p⁴, that say exactly where every electron in an atom lives. Those codes matter because they decide how an element behaves: why sodium fizzes violently in water while neon does nothing, why carbon makes four bonds, why the periodic table has the shape it does. We build the idea in four layers, each with its own interactive picture: the shells that electrons occupy, the subshells inside them, the orbitals inside those, and the order in which they all fill. By the end you will be able to write the configuration of any of the first 36 elements, and check it yourself. Drag, click and scrub as you go — every figure is meant to be played with.</EditableParagraph>
+            <EditableParagraph id="para-electrons-live-intro" blockId="electrons-live-intro">In this lesson you will learn to read and write electron configurations — the short codes, like 1s² 2s² 2p⁴, that say exactly where every electron in an atom lives. Those codes matter because they decide how an element behaves: why sodium fizzes violently in water while neon does nothing, why carbon makes four bonds, why the periodic table has the shape it does.</EditableParagraph>
         </Block>
     </StackLayout>,
 

@@ -6,7 +6,7 @@ import { InteractionHintSequence } from "@/components/atoms";
 import { Figure } from "@/components/molecules";
 import { useVar, useSetVar } from "@/stores";
 import { clamp } from "@/lib/motion";
-import { INK, INK_SOFT } from "./electronModel";
+import { INK, INK_SOFT, ROOM_COLORS } from "./electronModel";
 
 // ── Orbital shapes in 3D ────────────────────────────────────────────────────
 // Each orbital is the surface r = |Y(θ, φ)| of its real angular function,
@@ -24,9 +24,9 @@ interface OrbitalSpec {
 }
 
 const FAMILY_COLOR: Record<OrbitalFamily, string> = {
-    sphere: "#62D0AD",
-    dumbbell: "#8E90F5",
-    cloverleaf: "#F7B23B",
+    sphere: ROOM_COLORS.s,
+    dumbbell: ROOM_COLORS.p,
+    cloverleaf: ROOM_COLORS.d,
 };
 
 const ORBITALS: OrbitalSpec[] = [
@@ -175,13 +175,17 @@ function SpinWhenIdle({ rotation, spinning, dragging }: { rotation: React.Mutabl
     return null;
 }
 
-function OrbitalShapesScene() {
+function OrbitalShapesScene({ resetRef }: { resetRef: React.MutableRefObject<(() => void) | null> }) {
     const setVar = useSetVar();
     const highlight = useVar<string>("orbitalShapeHighlight", "");
-    const spinning = useVar<boolean>("orbitalSpinning", true);
-    const rotation = useRef({ yaw: 0.55, pitch: 0.42 });
+    const spinning = useVar<boolean>("orbitalSpinning", false);
+    // Face-on to start: z up, x across, y towards the viewer.
+    const rotation = useRef({ yaw: 0, pitch: 0 });
     const [dragging, setDragging] = useState(false);
     const last = useRef<{ x: number; y: number } | null>(null);
+    resetRef.current = () => {
+        rotation.current = { yaw: 0, pitch: 0 };
+    };
 
     return (
         <div
@@ -224,15 +228,20 @@ function OrbitalShapesScene() {
 
 export function OrbitalShapesFigure() {
     const setVar = useSetVar();
+    const resetRotation = useRef<(() => void) | null>(null);
     return (
         <Figure
             id="orbitals-shapes"
             playable
             playVarName="orbitalSpinning"
-            onReset={() => setVar("orbitalSpinning", true)}
-            caption="The one s orbital, the three p orbitals and the five d orbitals, each on its own x, y, z axes. Drag anywhere to turn them all together; press play to let them spin. Every p orbital is the same dumbbell pointing along a different axis, and four of the d orbitals are the same cloverleaf in different planes — only dz² looks different."
+            onReset={() => {
+                setVar("orbitalSpinning", false);
+                setVar("orbitalShapeHighlight", "");
+                resetRotation.current?.();
+            }}
+            caption="The one s orbital, the three p orbitals and the five d orbitals, each on its own x, y, z axes, seen face-on with z pointing up. Drag anywhere to turn them all together; press play to let them spin. Every p orbital is the same dumbbell pointing along a different axis, and four of the d orbitals are the same cloverleaf in different planes — only dz² looks different."
         >
-            <OrbitalShapesScene />
+            <OrbitalShapesScene resetRef={resetRotation} />
             <InteractionHintSequence
                 hintKey="orbitals-shapes-orbit"
                 steps={[{ gesture: "orbit-3d", label: "Drag to rotate the orbitals", position: { x: "50%", y: "40%" } }]}

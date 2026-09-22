@@ -204,7 +204,7 @@ export const variableDefinitions: Record<string, VariableDefinition> = {
     // Section 4 — Orbitals
     // ─────────────────────────────────────────
     orbitalSpinning: {
-        defaultValue: true,
+        defaultValue: false,
         type: 'boolean',
         label: 'Orbitals spinning',
         description: 'Play state of the 3D orbital-shape figure: slowly rotates all orbitals while true',

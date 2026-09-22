@@ -32,6 +32,8 @@ import {
     N_COLOR,
     ORBITALS_PER_ROOM,
     roomCapacity,
+    roomColor,
+    roomColorSoft,
     type RoomLetter,
 } from "./electronModel";
 
@@ -257,7 +259,7 @@ export const orbitalsBlocks: ReactElement[] = [
             <EditableParagraph id="para-orbitals-definition" blockId="orbitals-definition">
                 Inside every room there are desks, and an orbital is one of those desks. An
                 orbital is not a track the electron runs along — it is a region of space where
-                that electron is very likely to be found. An <InlineFormula latex="s" /> orbital
+                that electron is very likely to be found. An <InlineFormula latex="\clr{roomS}{s}" colorMap={{ roomS: roomColor("s") }} /> orbital
                 is{" "}
                 <InlineLinkedHighlight
                     id="highlight-orbitals-sphere"
@@ -265,26 +267,32 @@ export const orbitalsBlocks: ReactElement[] = [
                     highlightId="sphere"
                     showHint={false}
                     {...linkedHighlightPropsFromDefinition(getVariableInfo("orbitalShapeHighlight"))}
+                    color={roomColor("s")}
+                    bgColor={roomColorSoft("s")}
                 >
                     a sphere
                 </InlineLinkedHighlight>{" "}
-                around the nucleus; a <InlineFormula latex="p" /> orbital is{" "}
+                around the nucleus; a <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} /> orbital is{" "}
                 <InlineLinkedHighlight
                     id="highlight-orbitals-dumbbell"
                     varName="orbitalShapeHighlight"
                     highlightId="dumbbell"
                     showHint={false}
                     {...linkedHighlightPropsFromDefinition(getVariableInfo("orbitalShapeHighlight"))}
+                    color={roomColor("p")}
+                    bgColor={roomColorSoft("p")}
                 >
                     a dumbbell
                 </InlineLinkedHighlight>{" "}
-                pointing along one direction; a <InlineFormula latex="d" /> orbital is{" "}
+                pointing along one direction; a <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> orbital is{" "}
                 <InlineLinkedHighlight
                     id="highlight-orbitals-cloverleaf"
                     varName="orbitalShapeHighlight"
                     highlightId="cloverleaf"
                     showHint={false}
                     {...linkedHighlightPropsFromDefinition(getVariableInfo("orbitalShapeHighlight"))}
+                    color={roomColor("d")}
+                    bgColor={roomColorSoft("d")}
                 >
                     a cloverleaf
                 </InlineLinkedHighlight>
@@ -302,13 +310,39 @@ export const orbitalsBlocks: ReactElement[] = [
     <StackLayout key="layout-orbitals-shapes-reading" maxWidth="xl">
         <Block id="orbitals-shapes-reading" padding="sm">
             <EditableParagraph id="para-orbitals-shapes-reading" blockId="orbitals-shapes-reading">
-                Two things to notice while they turn. The three <InlineFormula latex="p" />{" "}
-                orbitals are one and the same dumbbell, pointing along <InlineFormula latex="x" />,{" "}
-                <InlineFormula latex="y" /> or <InlineFormula latex="z" /> — which is why a{" "}
-                <InlineFormula latex="p" /> room has exactly three desks. And four of the five{" "}
-                <InlineFormula latex="d" /> orbitals are the same cloverleaf lying in different
-                planes, with <InlineFormula latex="d_{z^2}" /> the odd one out — five desks in a{" "}
-                <InlineFormula latex="d" /> room.
+                Two things to notice while they turn. The three{" "}
+                <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} /> orbitals are one and the
+                same{" "}
+                <InlineLinkedHighlight
+                    id="highlight-orbitals-dumbbell-again"
+                    varName="orbitalShapeHighlight"
+                    highlightId="dumbbell"
+                    showHint={false}
+                    {...linkedHighlightPropsFromDefinition(getVariableInfo("orbitalShapeHighlight"))}
+                    color={roomColor("p")}
+                    bgColor={roomColorSoft("p")}
+                >
+                    dumbbell
+                </InlineLinkedHighlight>
+                , pointing along <InlineFormula latex="x" />, <InlineFormula latex="y" /> or{" "}
+                <InlineFormula latex="z" /> — which is why a{" "}
+                <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} /> room has exactly three
+                desks. And four of the five{" "}
+                <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> orbitals are the same{" "}
+                <InlineLinkedHighlight
+                    id="highlight-orbitals-cloverleaf-again"
+                    varName="orbitalShapeHighlight"
+                    highlightId="cloverleaf"
+                    showHint={false}
+                    {...linkedHighlightPropsFromDefinition(getVariableInfo("orbitalShapeHighlight"))}
+                    color={roomColor("d")}
+                    bgColor={roomColorSoft("d")}
+                >
+                    cloverleaf
+                </InlineLinkedHighlight>{" "}
+                lying in different planes, with{" "}
+                <InlineFormula latex="\clr{roomD}{d_{z^2}}" colorMap={{ roomD: roomColor("d") }} /> the odd one out —
+                five desks in a <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> room.
             </EditableParagraph>
         </Block>
     </StackLayout>,
@@ -318,7 +352,7 @@ export const orbitalsBlocks: ReactElement[] = [
             <EditableParagraph id="para-orbitals-two-electrons" blockId="orbitals-two-electrons">
                 The key rule is short: every orbital holds a maximum of two electrons, and those
                 two must have opposite spins. Two electrons per desk, no exceptions — whether the
-                desk is in an <InlineFormula latex="s" /> room or a <InlineFormula latex="d" />{" "}
+                desk is in an <InlineFormula latex="\clr{roomS}{s}" colorMap={{ roomS: roomColor("s") }} /> room or a <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} />{" "}
                 room. Try to break the rule below.
             </EditableParagraph>
         </Block>
@@ -371,8 +405,8 @@ export const orbitalsBlocks: ReactElement[] = [
         <Block id="orbitals-shell-check" padding="sm">
             <EditableParagraph id="para-orbitals-shell-check" blockId="orbitals-shell-check">
                 Check this against shell capacities from earlier. Shell 3 holds{" "}
-                <InlineFormula latex="3s" /> plus <InlineFormula latex="3p" /> plus{" "}
-                <InlineFormula latex="3d" />, which is{" "}
+                <InlineFormula latex="\clr{roomS}{3s}" colorMap={{ roomS: roomColor("s") }} /> plus <InlineFormula latex="\clr{roomP}{3p}" colorMap={{ roomP: roomColor("p") }} /> plus{" "}
+                <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} />, which is{" "}
                 <InlineFormula latex="2 + 6 + 10 = 18" /> electrons — exactly the{" "}
                 <InlineFormula latex="2\clr{n}{n}^2" colorMap={{ n: N_COLOR }} /> answer for <InlineFormula latex="\clr{n}{n} = \clr{n}{3}" colorMap={{ n: N_COLOR }} />. The two
                 rules agree because they are describing the same building.
@@ -383,8 +417,8 @@ export const orbitalsBlocks: ReactElement[] = [
     <StackLayout key="layout-orbitals-question" maxWidth="xl">
         <Block id="orbitals-question" padding="sm">
             <EditableParagraph id="para-orbitals-question" blockId="orbitals-question">
-                A <InlineFormula latex="f" /> room has 7 desks. Using the two-per-desk rule, the
-                most electrons an <InlineFormula latex="f" /> subshell can hold is{" "}
+                A <InlineFormula latex="\clr{roomF}{f}" colorMap={{ roomF: roomColor("f") }} /> room has 7 desks. Using the two-per-desk rule, the
+                most electrons an <InlineFormula latex="\clr{roomF}{f}" colorMap={{ roomF: roomColor("f") }} /> subshell can hold is{" "}
                 <InlineFeedback
                     varName="orbitalFRoomAnswer"
                     correctValue="14"

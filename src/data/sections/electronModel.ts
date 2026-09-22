@@ -152,6 +152,15 @@ export const ACCENT_SOFT = "rgba(98, 208, 173, 0.18)";
 
 /** One colour per shell, used wherever a shell is named: rings, electrons, labels, prose. */
 export const SHELL_COLORS = ["#62D0AD", "#8E90F5", "#F7B23B", "#AC8BF9", "#F8A0CD"];
+/** One colour per room type (orbital family): s teal, p indigo, d amber, f rose. */
+export const ROOM_COLORS: Record<RoomLetter, string> = { s: "#62D0AD", p: "#8E90F5", d: "#F7B23B", f: "#F8A0CD" };
+export const roomColor = (room: RoomLetter): string => ROOM_COLORS[room];
+export const roomColorSoft = (room: RoomLetter): string => {
+    const hex = ROOM_COLORS[room];
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return `rgba(${r}, ${g}, ${b}, 0.18)`;
+};
+
 /** The colour of the shell number n wherever it appears as a variable. */
 export const N_COLOR = "#62CCF9";
 export const shellColor = (n: number): string => SHELL_COLORS[(n - 1) % SHELL_COLORS.length];

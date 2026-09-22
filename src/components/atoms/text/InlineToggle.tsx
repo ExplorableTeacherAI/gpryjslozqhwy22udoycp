@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useVar, useSetVar } from '@/stores/variableStore';
 import { cn } from '@/lib/utils';
 import { encodeMarkerJson } from '@/lib/inlineMarkers';
 import { useEditing } from '@/contexts/EditingContext';
@@ -7,90 +8,78 @@ import { useAppMode } from '@/contexts/AppModeContext';
 import { useBlockContext } from '@/contexts/BlockContext';
 import { useComponentHint, HintIcon } from './InlineInteractionHint';
 
-interface InlineHyperlinkProps {
+interface InlineToggleProps {
     /** Unique identifier for this component instance */
     id?: string;
-    /** Link text content */
-    children: React.ReactNode;
-    /** External URL (opens new tab) */
-    href?: string;
-    /** Block ID to scroll to on page */
-    targetBlockId?: string;
-    /** Optional color for the text (default: emerald #10B981) */
+    /** Variable name in the shared store (stores the current selected option) */
+    varName?: string;
+    /** Array of options to cycle through on click */
+    options: string[];
+    /** Optional color for the text (default: fuchsia/mutable) */
     color?: string;
     /** Optional background color on hover */
     bgColor?: string;
+    /** Optional callback when value changes */
+    onChange?: (value: string, index: number) => void;
     /** Whether to show interaction hint for first occurrence (default: true) */
     showHint?: boolean;
 }
 
 /**
- * InlineHyperlink Component
+ * InlineToggle Component
  *
- * Clickable inline text that navigates to an external URL or scrolls to a block on page.
- * Belongs to the connective category (emerald #10B981).
+ * An interactive inline text that cycles through options on click,
+ * with variable store integration and full editing support.
  *
- * @example
+ * Features:
+ * - Variable store integration via `varName` prop (stores current selection)
+ * - Editor modal for configuring options, colors
+ * - Pending edits support for teacher workflow
+ * - Slash command insertion via /toggle
+ * - Click to cycle through options with animation
+ *
+ * @example Variable store mode
  * ```tsx
  * <p>
- *   Read the{" "}
- *   <InlineHyperlink href="https://en.wikipedia.org/wiki/Circle">
- *     Wikipedia article on circles
- *   </InlineHyperlink>{" "}
- *   or{" "}
- *   <InlineHyperlink targetBlockId="block-intro">
- *     jump to the intro
- *   </InlineHyperlink>.
+ *   The current shape is a{" "}
+ *   <InlineToggle
+ *     varName="currentShape"
+ *     options={["triangle", "square", "pentagon", "hexagon"]}
+ *     {...togglePropsFromDefinition(getVariableInfo('currentShape'))}
+ *   />{" "}
+ *   with equal sides.
  * </p>
  * ```
  */
-export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
+export const InlineToggle: React.FC<InlineToggleProps> = ({
     id,
-    children,
-    href,
-    targetBlockId,
-    color = '#10B981',
-    bgColor = 'rgba(16, 185, 129, 0.15)',
+    varName,
+    options,
+    color = '#D946EF',
+    bgColor = 'rgba(217, 70, 239, 0.15)',
+    onChange,
     showHint = true,
 }) => {
     const containerRef = useRef<HTMLSpanElement>(null);
-    const inlineIdRef = useRef(id || `hyperlink-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`);
+    const inlineIdRef = useRef(id || `toggle-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`);
 
     // ── Interaction Hint System ──
-    const { hintVisible, dismissHint } = useComponentHint('hyperlink', { enabled: showHint });
+    const { hintVisible, dismissHint } = useComponentHint('toggle', { enabled: showHint });
 
     // Editing support
     const { isEditor } = useAppMode();
-    const { isEditing, openHyperlinkEditor, pendingEdits } = useEditing();
+    const { isEditing, openToggleEditor, pendingEdits } = useEditing();
     const { id: blockIdFromContext } = useBlockContext();
 
     const isStandalone = typeof window !== 'undefined' && window.self === window.top;
     const canEdit = isEditor || isStandalone;
 
-    // Hover state
-    const [isHovered, setIsHovered] = useState(false);
-
-    // Extract text from children for identity (handles string, number, arrays)
-    const childText = useMemo(() => {
-        if (typeof children === 'string') return children;
-        if (typeof children === 'number') return String(children);
-        if (Array.isArray(children)) {
-            const texts = children
-                .filter(c => typeof c === 'string' || typeof c === 'number')
-                .map(String);
-            return texts.length > 0 ? texts.join('') : undefined;
-        }
-        return undefined;
-    }, [children]);
-
     // Element identity for matching pending edits
     const [editIdentity, setEditIdentity] = useState<{ blockId: string; elementPath: string } | null>(null);
 
-    const identitySuffix = childText ?? href ?? targetBlockId ?? 'link';
-
     useEffect(() => {
         if (blockIdFromContext) {
-            const elementPath = `hyperlink-${blockIdFromContext}-${inlineIdRef.current}`;
+            const elementPath = `toggle-${blockIdFromContext}-${inlineIdRef.current}`;
             setEditIdentity({ blockId: blockIdFromContext, elementPath });
             return;
         }
@@ -98,9 +87,9 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
 
         const block = containerRef.current.closest('[data-block-id]');
         const blockId = block?.getAttribute('data-block-id') || '';
-        const elementPath = `hyperlink-${blockId}-${inlineIdRef.current}`;
+        const elementPath = `toggle-${blockId}-${inlineIdRef.current}`;
         setEditIdentity({ blockId, elementPath });
-    }, [blockIdFromContext, identitySuffix]);
+    }, [blockIdFromContext, varName, options]);
 
     // Check for pending edits
     const pendingEdit = useMemo(() => {
@@ -109,44 +98,54 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
         const { blockId, elementPath } = editIdentity;
 
         const edit = [...pendingEdits].reverse().find(e =>
-            e.type === 'hyperlink' &&
+            e.type === 'toggle' &&
             (e as any).blockId === blockId &&
             ((e as any).componentId
                 ? (e as any).componentId === inlineIdRef.current
                 : (e as any).elementPath === elementPath)
         );
 
-        return edit as { newProps: { text?: string; href?: string; targetBlockId?: string; color?: string; bgColor?: string } } | null;
+        return edit as { newProps: { varName?: string; options?: string[]; color?: string; bgColor?: string } } | null;
     }, [isEditing, canEdit, pendingEdits, editIdentity]);
 
-    // Effective prop values (pending edits override originals)
-    const effectiveText = pendingEdit?.newProps.text ?? childText;
-    const effectiveHref = pendingEdit?.newProps.href ?? href;
-    const effectiveTargetBlockId = pendingEdit?.newProps.targetBlockId ?? targetBlockId;
+    // Effective prop values (pending edits override)
+    const effectiveVarName = pendingEdit ? pendingEdit.newProps.varName : varName;
+    const effectiveOptions = pendingEdit?.newProps.options ?? options;
     const effectiveColor = pendingEdit?.newProps.color ?? color;
     const effectiveBgColor = pendingEdit?.newProps.bgColor ?? bgColor;
 
-    // DOM text fallback — captured after mount for when childText extraction fails
-    const domTextRef = useRef<string | undefined>(undefined);
-    useEffect(() => {
-        if (containerRef.current) {
-            const text = containerRef.current.textContent?.trim();
-            if (text) domTextRef.current = text;
+    // Variable store: stores the currently selected option string
+    const storeValue = useVar(effectiveVarName || '', effectiveOptions[0] || '');
+    const setVar = useSetVar();
+
+    // Local state for component without varName
+    const [localValue, setLocalValue] = useState(effectiveOptions[0] || '');
+    const [isHovered, setIsHovered] = useState(false);
+
+    // Determine which value to use
+    const usesVarStore = effectiveVarName !== undefined;
+    const currentValue = usesVarStore ? (storeValue as string || effectiveOptions[0] || '') : localValue;
+
+    const currentIndex = effectiveOptions.indexOf(currentValue);
+
+    const setCurrentValue = useCallback((val: string) => {
+        if (usesVarStore && effectiveVarName) {
+            setVar(effectiveVarName, val);
+        } else {
+            setLocalValue(val);
         }
-    });
+    }, [usesVarStore, effectiveVarName, setVar]);
 
     // Stable ID and serialized props for round-trip extraction (base64 for HTML attribute safety)
     const componentProps = useMemo(() => {
-        const textForProps = effectiveText ?? domTextRef.current;
         const json = JSON.stringify({
-            text: textForProps,
-            href: effectiveHref,
-            targetBlockId: effectiveTargetBlockId,
+            varName: effectiveVarName,
+            options: effectiveOptions,
             color: effectiveColor,
             bgColor: effectiveBgColor,
         });
         try { return encodeMarkerJson(json); } catch { return ''; }
-    }, [effectiveText, effectiveHref, effectiveTargetBlockId, effectiveColor, effectiveBgColor]);
+    }, [effectiveVarName, effectiveOptions, effectiveColor, effectiveBgColor]);
 
     const handleEditClick = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
@@ -158,16 +157,13 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
         if (!elementPath) {
             const block = containerRef.current?.closest('[data-block-id]');
             blockId = blockId || block?.getAttribute('data-block-id') || '';
-            elementPath = `hyperlink-${blockId}-${inlineIdRef.current}`;
+            elementPath = `toggle-${blockId}-${inlineIdRef.current}`;
         }
 
-        const text = effectiveText ?? containerRef.current?.textContent?.trim();
-
-        openHyperlinkEditor(
+        openToggleEditor(
             {
-                text,
-                href: effectiveHref,
-                targetBlockId: effectiveTargetBlockId,
+                varName: effectiveVarName,
+                options: effectiveOptions,
                 color: effectiveColor,
                 bgColor: effectiveBgColor,
                 componentId: inlineIdRef.current,
@@ -175,7 +171,7 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
             blockId,
             elementPath
         );
-    }, [editIdentity, blockIdFromContext, effectiveText, effectiveHref, effectiveTargetBlockId, effectiveColor, effectiveBgColor, openHyperlinkEditor, identitySuffix]);
+    }, [editIdentity, blockIdFromContext, effectiveVarName, effectiveOptions, effectiveColor, effectiveBgColor, openToggleEditor, varName, options]);
 
     const handleMouseDown = (e: React.MouseEvent) => {
         if (canEdit && isEditing) {
@@ -185,18 +181,17 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
     };
 
     const handleClick = () => {
+        if (canEdit && isEditing) return;
         dismissHint(); // Dismiss interaction hint on first click
-        if (effectiveHref) {
-            window.open(effectiveHref, '_blank', 'noopener,noreferrer');
-        } else if (effectiveTargetBlockId) {
-            document.querySelector(`[data-block-id="${effectiveTargetBlockId}"]`)
-                ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        const nextIndex = (currentIndex + 1) % effectiveOptions.length;
+        const nextValue = effectiveOptions[nextIndex];
+        setCurrentValue(nextValue);
+        onChange?.(nextValue, nextIndex);
     };
 
     // Wrapper props for round-trip extraction
     const wrapperProps = {
-        'data-inline-component': 'inlineHyperlink' as const,
+        'data-inline-component': 'inlineToggle' as const,
         'data-component-id': inlineIdRef.current,
         'data-component-props': componentProps,
         contentEditable: false as const,
@@ -214,20 +209,15 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
             >
                 <span
                     onMouseDown={handleMouseDown}
-                    onClick={(e) => {
-                        // Allow navigation even in edit mode when clicking the text directly
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleClick();
-                    }}
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
                     className="font-medium cursor-pointer"
                     style={{
                         color: effectiveColor,
-                        borderBottom: `2px solid ${effectiveColor}`,
+                        borderBottom: `2px dashed ${effectiveColor}`,
                         paddingBottom: '2px',
                     }}
                 >
-                    {effectiveText ?? children}
+                    {effectiveOptions[0] || 'option'}
                 </span>
 
                 {/* Edit button on hover */}
@@ -239,7 +229,7 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
                             backgroundColor: effectiveColor,
                             color: 'white',
                         }}
-                        title="Edit hyperlink"
+                        title="Edit toggle"
                     >
                         <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -250,37 +240,43 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
         );
     }
 
-    // Preview mode: clickable link
+    // Preview mode: clickable toggle
     return (
         <span ref={containerRef} {...wrapperProps} className="inline-flex items-center relative">
-            <motion.span
+            <span
                 onClick={handleClick}
                 onMouseDown={handleMouseDown}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 className="font-medium cursor-pointer select-none"
                 style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
                     color: effectiveColor,
-                    borderBottom: `2px solid ${effectiveColor}`,
-                    paddingBottom: '1px',
+                    borderBottom: `2px dashed ${effectiveColor}`,
+                    paddingBottom: '2px',
                     background: isHovered ? effectiveBgColor : 'transparent',
                     borderRadius: isHovered ? '3px 3px 0 0' : '0',
                     transition: 'all 0.2s ease',
                 }}
-                whileTap={{ scale: 0.97 }}
                 tabIndex={0}
                 role="button"
             >
-                {effectiveText ?? children}
-            </motion.span>
+                <AnimatePresence mode="wait">
+                    <motion.span
+                        key={currentIndex}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.15 }}
+                    >
+                        {currentValue}
+                    </motion.span>
+                </AnimatePresence>
+            </span>
 
             {/* Interaction Hint - shows for first instance only */}
-            <HintIcon type="hyperlink" visible={hintVisible} isEditing={isEditing} />
+            <HintIcon type="toggle" visible={hintVisible} isEditing={isEditing} />
         </span>
     );
 };
 
-export default InlineHyperlink;
+export default InlineToggle;

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useSetVar } from '@/stores/variableStore';
 import { cn } from '@/lib/utils';
 import { encodeMarkerJson } from '@/lib/inlineMarkers';
 import { useEditing } from '@/contexts/EditingContext';
@@ -7,68 +8,74 @@ import { useAppMode } from '@/contexts/AppModeContext';
 import { useBlockContext } from '@/contexts/BlockContext';
 import { useComponentHint, HintIcon } from './InlineInteractionHint';
 
-interface InlineHyperlinkProps {
+interface InlineTriggerProps {
     /** Unique identifier for this component instance */
     id?: string;
-    /** Link text content */
+    /** Clickable text content */
     children: React.ReactNode;
-    /** External URL (opens new tab) */
-    href?: string;
-    /** Block ID to scroll to on page */
-    targetBlockId?: string;
+    /** Variable to set on click */
+    varName?: string;
+    /** Value to set the variable to */
+    value?: string | number | boolean;
     /** Optional color for the text (default: emerald #10B981) */
     color?: string;
     /** Optional background color on hover */
     bgColor?: string;
+    /** @deprecated Icon prop is no longer rendered */
+    icon?: string;
+    /** Optional callback on trigger */
+    onTrigger?: () => void;
     /** Whether to show interaction hint for first occurrence (default: true) */
     showHint?: boolean;
 }
 
 /**
- * InlineHyperlink Component
+ * InlineTrigger Component
  *
- * Clickable inline text that navigates to an external URL or scrolls to a block on page.
+ * Clickable inline text that sets a global variable to a specific value on click.
  * Belongs to the connective category (emerald #10B981).
  *
  * @example
  * ```tsx
  * <p>
- *   Read the{" "}
- *   <InlineHyperlink href="https://en.wikipedia.org/wiki/Circle">
- *     Wikipedia article on circles
- *   </InlineHyperlink>{" "}
+ *   The amplitude is <InlineScrubbleNumber varName="amplitude" ... />.
+ *   You can{" "}
+ *   <InlineTrigger varName="amplitude" value={1}>reset it to 1</InlineTrigger>{" "}
  *   or{" "}
- *   <InlineHyperlink targetBlockId="block-intro">
- *     jump to the intro
- *   </InlineHyperlink>.
+ *   <InlineTrigger varName="amplitude" value={5} icon="zap">max it out</InlineTrigger>.
  * </p>
  * ```
  */
-export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
+export const InlineTrigger: React.FC<InlineTriggerProps> = ({
     id,
     children,
-    href,
-    targetBlockId,
+    varName,
+    value,
     color = '#10B981',
     bgColor = 'rgba(16, 185, 129, 0.15)',
+    icon,
+    onTrigger,
     showHint = true,
 }) => {
     const containerRef = useRef<HTMLSpanElement>(null);
-    const inlineIdRef = useRef(id || `hyperlink-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`);
-
-    // ── Interaction Hint System ──
-    const { hintVisible, dismissHint } = useComponentHint('hyperlink', { enabled: showHint });
+    const inlineIdRef = useRef(id || `trigger-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`);
 
     // Editing support
     const { isEditor } = useAppMode();
-    const { isEditing, openHyperlinkEditor, pendingEdits } = useEditing();
+    const { isEditing, openTriggerEditor, pendingEdits } = useEditing();
     const { id: blockIdFromContext } = useBlockContext();
 
     const isStandalone = typeof window !== 'undefined' && window.self === window.top;
     const canEdit = isEditor || isStandalone;
 
+    // Variable store
+    const setVar = useSetVar();
+
     // Hover state
     const [isHovered, setIsHovered] = useState(false);
+
+    // ── Interaction Hint System ──
+    const { hintVisible, dismissHint } = useComponentHint('trigger', { enabled: showHint });
 
     // Extract text from children for identity (handles string, number, arrays)
     const childText = useMemo(() => {
@@ -86,11 +93,16 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
     // Element identity for matching pending edits
     const [editIdentity, setEditIdentity] = useState<{ blockId: string; elementPath: string } | null>(null);
 
-    const identitySuffix = childText ?? href ?? targetBlockId ?? 'link';
+    // Build a suffix that uniquely identifies this trigger within a block.
+    // varName alone is NOT enough — multiple triggers can target the same variable
+    // with different values (e.g. "reset to 1" vs "max it out" both set animationSpeed).
+    const identitySuffix = childText
+        ? `${varName ?? 'novar'}-${childText}`
+        : `${varName ?? 'novar'}-${value !== undefined ? String(value) : 'trigger'}`;
 
     useEffect(() => {
         if (blockIdFromContext) {
-            const elementPath = `hyperlink-${blockIdFromContext}-${inlineIdRef.current}`;
+            const elementPath = `trigger-${blockIdFromContext}-${inlineIdRef.current}`;
             setEditIdentity({ blockId: blockIdFromContext, elementPath });
             return;
         }
@@ -98,7 +110,7 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
 
         const block = containerRef.current.closest('[data-block-id]');
         const blockId = block?.getAttribute('data-block-id') || '';
-        const elementPath = `hyperlink-${blockId}-${inlineIdRef.current}`;
+        const elementPath = `trigger-${blockId}-${inlineIdRef.current}`;
         setEditIdentity({ blockId, elementPath });
     }, [blockIdFromContext, identitySuffix]);
 
@@ -108,23 +120,33 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
 
         const { blockId, elementPath } = editIdentity;
 
-        const edit = [...pendingEdits].reverse().find(e =>
-            e.type === 'hyperlink' &&
+        const triggerEdits = pendingEdits.filter(e => e.type === 'trigger');
+        const edit = [...triggerEdits].reverse().find(e =>
             (e as any).blockId === blockId &&
             ((e as any).componentId
                 ? (e as any).componentId === inlineIdRef.current
                 : (e as any).elementPath === elementPath)
         );
 
-        return edit as { newProps: { text?: string; href?: string; targetBlockId?: string; color?: string; bgColor?: string } } | null;
+        if (import.meta.env.DEV && triggerEdits.length > 0) {
+            console.log('[InlineTrigger] Matching edit:', {
+                editIdentity: { blockId, elementPath },
+                triggerEditCount: triggerEdits.length,
+                matched: !!edit,
+                effectiveProps: edit ? (edit as any).newProps : null,
+            });
+        }
+
+        return edit as { newProps: { text?: string; varName?: string; value?: string | number | boolean; color?: string; bgColor?: string; icon?: string } } | null;
     }, [isEditing, canEdit, pendingEdits, editIdentity]);
 
     // Effective prop values (pending edits override originals)
     const effectiveText = pendingEdit?.newProps.text ?? childText;
-    const effectiveHref = pendingEdit?.newProps.href ?? href;
-    const effectiveTargetBlockId = pendingEdit?.newProps.targetBlockId ?? targetBlockId;
+    const effectiveVarName = pendingEdit?.newProps.varName ?? varName;
+    const effectiveValue = pendingEdit?.newProps.value ?? value;
     const effectiveColor = pendingEdit?.newProps.color ?? color;
     const effectiveBgColor = pendingEdit?.newProps.bgColor ?? bgColor;
+    const effectiveIcon = pendingEdit?.newProps.icon ?? icon;
 
     // DOM text fallback — captured after mount for when childText extraction fails
     const domTextRef = useRef<string | undefined>(undefined);
@@ -135,18 +157,20 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
         }
     });
 
-    // Stable ID and serialized props for round-trip extraction (base64 for HTML attribute safety)
+    // Stable ID and serialized props for round-trip extraction (base64-encoded for HTML attribute safety)
     const componentProps = useMemo(() => {
+        // Always include text to survive round-trip; fall back to DOM text or default
         const textForProps = effectiveText ?? domTextRef.current;
         const json = JSON.stringify({
             text: textForProps,
-            href: effectiveHref,
-            targetBlockId: effectiveTargetBlockId,
+            varName: effectiveVarName,
+            value: effectiveValue,
             color: effectiveColor,
             bgColor: effectiveBgColor,
+            icon: effectiveIcon,
         });
         try { return encodeMarkerJson(json); } catch { return ''; }
-    }, [effectiveText, effectiveHref, effectiveTargetBlockId, effectiveColor, effectiveBgColor]);
+    }, [effectiveText, effectiveVarName, effectiveValue, effectiveColor, effectiveBgColor, effectiveIcon]);
 
     const handleEditClick = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
@@ -158,24 +182,26 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
         if (!elementPath) {
             const block = containerRef.current?.closest('[data-block-id]');
             blockId = blockId || block?.getAttribute('data-block-id') || '';
-            elementPath = `hyperlink-${blockId}-${inlineIdRef.current}`;
+            elementPath = `trigger-${blockId}-${inlineIdRef.current}`;
         }
 
+        // Use effectiveText, falling back to DOM textContent for robustness
         const text = effectiveText ?? containerRef.current?.textContent?.trim();
 
-        openHyperlinkEditor(
+        openTriggerEditor(
             {
                 text,
-                href: effectiveHref,
-                targetBlockId: effectiveTargetBlockId,
+                varName: effectiveVarName,
+                value: effectiveValue,
                 color: effectiveColor,
                 bgColor: effectiveBgColor,
+                icon: effectiveIcon,
                 componentId: inlineIdRef.current,
             },
             blockId,
             elementPath
         );
-    }, [editIdentity, blockIdFromContext, effectiveText, effectiveHref, effectiveTargetBlockId, effectiveColor, effectiveBgColor, openHyperlinkEditor, identitySuffix]);
+    }, [editIdentity, blockIdFromContext, effectiveText, effectiveVarName, effectiveValue, effectiveColor, effectiveBgColor, effectiveIcon, openTriggerEditor, identitySuffix]);
 
     const handleMouseDown = (e: React.MouseEvent) => {
         if (canEdit && isEditing) {
@@ -185,18 +211,17 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
     };
 
     const handleClick = () => {
+        if (canEdit && isEditing) return;
         dismissHint(); // Dismiss interaction hint on first click
-        if (effectiveHref) {
-            window.open(effectiveHref, '_blank', 'noopener,noreferrer');
-        } else if (effectiveTargetBlockId) {
-            document.querySelector(`[data-block-id="${effectiveTargetBlockId}"]`)
-                ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (effectiveVarName && effectiveValue !== undefined) {
+            setVar(effectiveVarName, effectiveValue);
         }
+        onTrigger?.();
     };
 
     // Wrapper props for round-trip extraction
     const wrapperProps = {
-        'data-inline-component': 'inlineHyperlink' as const,
+        'data-inline-component': 'inlineTrigger' as const,
         'data-component-id': inlineIdRef.current,
         'data-component-props': componentProps,
         contentEditable: false as const,
@@ -214,17 +239,16 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
             >
                 <span
                     onMouseDown={handleMouseDown}
-                    onClick={(e) => {
-                        // Allow navigation even in edit mode when clicking the text directly
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleClick();
-                    }}
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
                     className="font-medium cursor-pointer"
                     style={{
                         color: effectiveColor,
-                        borderBottom: `2px solid ${effectiveColor}`,
-                        paddingBottom: '2px',
+                        textDecoration: 'none',
+                        backgroundImage: `repeating-linear-gradient(to right, ${effectiveColor} 0px, ${effectiveColor} 1.5px, transparent 1.5px, transparent 3.5px, ${effectiveColor} 3.5px, ${effectiveColor} 9px, transparent 9px, transparent 11px)`,
+                        backgroundPosition: '0 100%',
+                        backgroundSize: '11px 1.5px',
+                        backgroundRepeat: 'repeat-x',
+                        paddingBottom: '2.5px',
                     }}
                 >
                     {effectiveText ?? children}
@@ -239,7 +263,7 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
                             backgroundColor: effectiveColor,
                             color: 'white',
                         }}
-                        title="Edit hyperlink"
+                        title="Edit trigger"
                     >
                         <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -250,9 +274,9 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
         );
     }
 
-    // Preview mode: clickable link
+    // Preview mode: clickable trigger
     return (
-        <span ref={containerRef} {...wrapperProps} className="inline-flex items-center relative">
+        <span ref={containerRef} {...wrapperProps} className="relative inline">
             <motion.span
                 onClick={handleClick}
                 onMouseDown={handleMouseDown}
@@ -262,12 +286,15 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
                 style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '4px',
                     color: effectiveColor,
-                    borderBottom: `2px solid ${effectiveColor}`,
-                    paddingBottom: '1px',
-                    background: isHovered ? effectiveBgColor : 'transparent',
-                    borderRadius: isHovered ? '3px 3px 0 0' : '0',
+                    backgroundColor: isHovered ? effectiveBgColor : 'transparent',
+                    borderRadius: isHovered ? '3px' : '0',
+                    textDecoration: 'none',
+                    backgroundImage: `repeating-linear-gradient(to right, ${effectiveColor} 0px, ${effectiveColor} 1.5px, transparent 1.5px, transparent 3.5px, ${effectiveColor} 3.5px, ${effectiveColor} 9px, transparent 9px, transparent 11px)`,
+                    backgroundPosition: '0 100%',
+                    backgroundSize: '11px 1.5px',
+                    backgroundRepeat: 'repeat-x',
+                    paddingBottom: '2.5px',
                     transition: 'all 0.2s ease',
                 }}
                 whileTap={{ scale: 0.97 }}
@@ -278,9 +305,9 @@ export const InlineHyperlink: React.FC<InlineHyperlinkProps> = ({
             </motion.span>
 
             {/* Interaction Hint - shows for first instance only */}
-            <HintIcon type="hyperlink" visible={hintVisible} isEditing={isEditing} />
+            <HintIcon type="trigger" visible={hintVisible} isEditing={isEditing} />
         </span>
     );
 };
 
-export default InlineHyperlink;
+export default InlineTrigger;

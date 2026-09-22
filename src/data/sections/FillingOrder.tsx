@@ -8,6 +8,7 @@ import {
     InlineClozeChoice,
     InlineFeedback,
     InlineScrubbleNumber,
+    InlineTrigger,
     InteractionHintSequence,
 } from "@/components/atoms";
 import { FormulaBlock, Figure, FigureSlider } from "@/components/molecules";
@@ -189,6 +190,17 @@ function EnergyLadderFigure() {
     );
 }
 
+/** "Add one more electron": a trigger that snaps the count to one above its current value. */
+function AddElectronTrigger() {
+    const count = useVar<number>("fillingElectronCount", 18);
+    const next = Math.min(MAX_ELECTRONS, count + 1);
+    return (
+        <InlineTrigger id="trigger-filling-order-add-one" varName="fillingElectronCount" value={next} icon="zap">
+            drop in one more electron
+        </InlineTrigger>
+    );
+}
+
 function NewestSubshellReadout() {
     const count = useVar<number>("fillingElectronCount", 18);
     const newest = lastFilledSubshell(count);
@@ -234,9 +246,14 @@ export const fillingOrderBlocks: ReactElement[] = [
                     varName="fillingElectronCount"
                     {...numberPropsFromDefinition(getVariableInfo("fillingElectronCount"))}
                 />{" "}
-                electrons on the ladder, the newest one sits on <NewestSubshellReadout />. Keep
-                adding past 18 and watch the nineteenth electron: it skips the empty{" "}
-                <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} /> rung and drops onto <InlineFormula latex="\clr{roomS}{4s}" colorMap={{ roomS: roomColor("s") }} />,
+                electrons on the ladder, the newest one sits on <NewestSubshellReadout />. The
+                interesting moment is the nineteenth electron:{" "}
+                <InlineTrigger id="trigger-filling-order-reset-eighteen" varName="fillingElectronCount" value={18} icon="refresh">
+                    go back to 18 electrons
+                </InlineTrigger>
+                , then <AddElectronTrigger /> and watch where it lands. It skips the empty{" "}
+                <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} /> rung and
+                drops onto <InlineFormula latex="\clr{roomS}{4s}" colorMap={{ roomS: roomColor("s") }} />,
                 because that rung is lower.
             </EditableParagraph>
         </Block>

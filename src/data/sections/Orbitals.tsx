@@ -280,9 +280,7 @@ function RoomDesksReadout() {
 export const orbitalsBlocks: ReactElement[] = [
     <StackLayout key="layout-orbitals-heading" maxWidth="xl">
         <Block id="orbitals-heading" padding="sm">
-            <EditableH2 id="h2-orbitals-heading" blockId="orbitals-heading">
-                4. Orbitals: the desks in each room
-            </EditableH2>
+            <EditableH2 id="h2-orbitals-heading" blockId="orbitals-heading">Orbitals: the desks in each room</EditableH2>
         </Block>
     </StackLayout>,
 

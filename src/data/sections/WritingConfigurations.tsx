@@ -501,7 +501,7 @@ export const writingConfigurationsBlocks: ReactElement[] = [
 
     <StackLayout key="layout-block-1790090588026" maxWidth="xl">
         <Block id="block-1790090588026" padding="sm">
-            <EditableH1 id="h1-block-1790090588026" blockId="block-1790090588026"></EditableH1>
+            <EditableH1 id="h1-block-1790090588026" blockId="block-1790090588026">/</EditableH1>
         </Block>
     </StackLayout>,
 ];

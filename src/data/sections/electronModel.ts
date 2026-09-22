@@ -151,7 +151,9 @@ export const ACCENT = "#62D0AD";
 export const ACCENT_SOFT = "rgba(98, 208, 173, 0.18)";
 
 /** One colour per shell, used wherever a shell is named: rings, electrons, labels, prose. */
-export const SHELL_COLORS = ["#62D0AD", "#8E90F5", "#F7B23B", "#AC8BF9"];
+export const SHELL_COLORS = ["#62D0AD", "#8E90F5", "#F7B23B", "#AC8BF9", "#F8A0CD"];
+/** The colour of the shell number n wherever it appears as a variable. */
+export const N_COLOR = "#62CCF9";
 export const shellColor = (n: number): string => SHELL_COLORS[(n - 1) % SHELL_COLORS.length];
 export const shellColorSoft = (n: number): string => {
     const hex = shellColor(n);

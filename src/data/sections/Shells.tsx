@@ -19,8 +19,10 @@ import {
     clozePropsFromDefinition,
     linkedHighlightPropsFromDefinition,
     numberPropsFromDefinition,
+    scrubVarsFromDefinitions,
 } from "../variables";
-import { INK, INK_SOFT, INK_FAINT, fillShellsSimple, shellCapacity, shellColor, shellColorSoft } from "./electronModel";
+import { INK, INK_SOFT, INK_FAINT, N_COLOR, fillShellsSimple, shellCapacity, shellColor, shellColorSoft } from "./electronModel";
+import { ShellCapacityFigure } from "./shellCapacityFigure";
 import { StepButton } from "./electronFigureParts";
 
 // ── Shell picture ───────────────────────────────────────────────────────────
@@ -201,6 +203,20 @@ function ShellCountReadout({ n }: { n: number }) {
     );
 }
 
+function ShellNumberReadout() {
+    const n = useVar<number>("shellNumber", 3);
+    return <span style={{ fontWeight: 700, color: N_COLOR, fontVariantNumeric: "tabular-nums" }}>{n}</span>;
+}
+
+function ShellNumberCapacityReadout() {
+    const n = useVar<number>("shellNumber", 3);
+    return (
+        <span style={{ fontWeight: 700, color: N_COLOR, fontVariantNumeric: "tabular-nums" }}>
+            {shellCapacity(n)}
+        </span>
+    );
+}
+
 export const shellsBlocks: ReactElement[] = [
     <StackLayout key="layout-shells-heading" maxWidth="xl">
         <Block id="shells-heading" padding="sm">
@@ -300,18 +316,35 @@ export const shellsBlocks: ReactElement[] = [
 
     <StackLayout key="layout-shells-capacity-formula" maxWidth="xl">
         <Block id="shells-capacity-formula" padding="lg">
-            <FormulaBlock latex="\text{maximum electrons in shell } n = 2n^2" />
+            <FormulaBlock
+                latex="\text{maximum electrons in shell } \clr{n}{n} = 2\clr{n}{n}^2 \qquad \text{so for } \clr{n}{n} = \scrub{shellNumber}: \; 2 \times \scrub{shellNumber}^2 = \val{shellCapacityValue}"
+                colorMap={{ n: N_COLOR, shellCapacityValue: N_COLOR }}
+                variables={scrubVarsFromDefinitions(["shellNumber"])}
+            />
+        </Block>
+    </StackLayout>,
+
+    <StackLayout key="layout-shells-capacity-squares" maxWidth="xl">
+        <Block id="shells-capacity-squares" padding="sm" hasVisualization>
+            <ShellCapacityFigure />
         </Block>
     </StackLayout>,
 
     <StackLayout key="layout-shells-capacity-worked" maxWidth="xl">
         <Block id="shells-capacity-worked" padding="sm">
             <EditableParagraph id="para-shells-capacity-worked" blockId="shells-capacity-worked">
-                Step through it for the first three shells. Shell 1:{" "}
-                <InlineFormula latex="2 \times 1^2 = 2" /> electrons. Shell 2:{" "}
-                <InlineFormula latex="2 \times 2^2 = 8" /> electrons. Shell 3:{" "}
-                <InlineFormula latex="2 \times 3^2 = 18" /> electrons. Notice that the capacity
-                grows quickly, and that only the first two shells happen to stop at 2 and 8.
+                Drag <InlineFormula latex="\clr{n}{n}" colorMap={{ n: N_COLOR }} /> in the formula, or
+                the corner of the square. With <InlineFormula latex="\clr{n}{n}" colorMap={{ n: N_COLOR }} />{" "}
+                at{" "}
+                <InlineScrubbleNumber
+                    id="scrub-shells-number"
+                    varName="shellNumber"
+                    {...numberPropsFromDefinition(getVariableInfo("shellNumber"))}
+                />
+                , each square holds <ShellNumberReadout /> × <ShellNumberReadout /> electrons, and two of them
+                make <ShellNumberCapacityReadout />. Going up one shell does not add a fixed number of
+                places — it adds a whole new row and column to each square — which is why the
+                capacities run 2, 8, 18, 32 and only the first two happen to look small.
             </EditableParagraph>
         </Block>
     </StackLayout>,

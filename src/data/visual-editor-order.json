@@ -22,8 +22,8 @@
     "subshells-heading",
     "subshells-definition",
     "subshells-count-rule",
-    "subshells-floors",
     "subshells-naming",
+    "subshells-floors",
     "subshells-table",
     "subshells-question",
     "orbitals-heading",
@@ -284,26 +284,20 @@
     },
     {
       "id": "layout-subshells-floors",
-      "type": "stack",
+      "type": "split",
       "columns": [
+        [
+          "subshells-naming"
+        ],
         [
           "subshells-floors"
         ]
       ],
       "props": {
-        "maxWidth": "xl"
-      }
-    },
-    {
-      "id": "layout-subshells-naming",
-      "type": "stack",
-      "columns": [
-        [
-          "subshells-naming"
-        ]
-      ],
-      "props": {
-        "maxWidth": "xl"
+        "ratio": "1:1",
+        "gap": "lg",
+        "reverse": false,
+        "align": "start"
       }
     },
     {

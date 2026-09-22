@@ -504,4 +504,10 @@ export const writingConfigurationsBlocks: ReactElement[] = [
             <EditableH2 id="h2-block-1790090621680" blockId="block-1790090621680">Conclusion</EditableH2>
         </Block>
     </StackLayout>,
+
+    <StackLayout key="layout-block-1790090645896" maxWidth="xl">
+        <Block id="block-1790090645896" padding="sm">
+            <EditableParagraph id="para-block-1790090645896" blockId="block-1790090645896">here is the conclusion</EditableParagraph>
+        </Block>
+    </StackLayout>,
 ];

@@ -7,8 +7,8 @@
     "electrons-live-zoom",
     "electrons-live-zoom-reading",
     "electrons-live-building",
-    "electrons-live-address-building",
     "electrons-live-addresses",
+    "electrons-live-address-building",
     "shells-heading",
     "shells-definition",
     "shells-energy-idea",
@@ -117,7 +117,8 @@
       "type": "split",
       "columns": [
         [
-          "electrons-live-building"
+          "electrons-live-building",
+          "electrons-live-addresses"
         ],
         [
           "electrons-live-address-building"
@@ -128,18 +129,6 @@
         "gap": "lg",
         "reverse": false,
         "align": "start"
-      }
-    },
-    {
-      "id": "layout-electrons-live-addresses",
-      "type": "stack",
-      "columns": [
-        [
-          "electrons-live-addresses"
-        ]
-      ],
-      "props": {
-        "maxWidth": "xl"
       }
     },
     {

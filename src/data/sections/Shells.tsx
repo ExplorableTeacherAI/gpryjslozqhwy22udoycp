@@ -221,7 +221,7 @@ export const shellsBlocks: ReactElement[] = [
     <StackLayout key="layout-shells-heading" maxWidth="xl">
         <Block id="shells-heading" padding="sm">
             <EditableH2 id="h2-shells-heading" blockId="shells-heading">
-                2. Shells — the floors of the building
+                2. Shells: the floors of the building
             </EditableH2>
         </Block>
     </StackLayout>,
@@ -229,7 +229,7 @@ export const shellsBlocks: ReactElement[] = [
     <StackLayout key="layout-shells-definition" maxWidth="xl">
         <Block id="shells-definition" padding="sm">
             <EditableParagraph id="para-shells-definition" blockId="shells-definition">
-                A shell is one main energy level around the nucleus — one floor of our building.
+                A shell is one main energy level around the nucleus, one floor of our building.
                 Shells are numbered <InlineFormula latex="\clr{n}{n} = \clr{n}{1}" colorMap={{ n: N_COLOR }} />,{" "}
                 <InlineFormula latex="\clr{n}{n} = \clr{n}{2}" colorMap={{ n: N_COLOR }} />, <InlineFormula latex="\clr{n}{n} = \clr{n}{3}" colorMap={{ n: N_COLOR }} /> and so on,
                 starting from the floor closest to the nucleus. The bigger the number, the
@@ -243,7 +243,7 @@ export const shellsBlocks: ReactElement[] = [
             <EditableParagraph id="para-shells-energy-idea" blockId="shells-energy-idea">
                 Why does a further shell mean more energy? The nucleus is positive and electrons
                 are negative, so they attract. Moving an electron further out means pulling
-                against that attraction, which takes energy — exactly like carrying a box up to a
+                against that attraction, which takes energy, exactly like carrying a box up to a
                 higher floor. This is why electrons settle into the lowest empty floors first.
             </EditableParagraph>
         </Block>
@@ -343,7 +343,7 @@ export const shellsBlocks: ReactElement[] = [
                 />
                 , each square holds <ShellNumberReadout /> × <ShellNumberReadout /> electrons, and two of them
                 make <ShellNumberCapacityReadout />. Going up one shell does not add a fixed number of
-                places — it adds a whole new row and column to each square — which is why the
+                places; it adds a whole new row and column to each square, which is why the
                 capacities run 2, 8, 18, 32 and only the first two happen to look small.
             </EditableParagraph>
         </Block>
@@ -359,9 +359,9 @@ export const shellsBlocks: ReactElement[] = [
                     varName="shellSixCapacityAnswer"
                     correctValue="72"
                     position="terminal"
-                    successMessage="— exactly: two squares of 6 × 6 is 2 × 36 = 72"
-                    failureMessage="— not quite."
-                    hint="Square the shell number first (6 × 6), then double it — 36 is only one square, and 12 forgets to square"
+                    successMessage="(exactly: two squares of 6 × 6 is 2 × 36 = 72)"
+                    failureMessage="(not quite)"
+                    hint="Square the shell number first (6 × 6), then double it; 36 is only one square, and 12 forgets to square"
                     reviewBlockId="shells-capacity-squares"
                     reviewLabel="Drag n to 5 and imagine one more row"
                 >

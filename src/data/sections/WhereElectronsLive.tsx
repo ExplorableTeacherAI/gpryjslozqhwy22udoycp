@@ -5,6 +5,7 @@ import {
     EditableH1,
     EditableH2,
     EditableParagraph,
+    InlineFormula,
     InlineLinkedHighlight,
     InlineScrubbleNumber,
     InlineToggle,
@@ -19,7 +20,7 @@ import {
     numberPropsFromDefinition,
     togglePropsFromDefinition,
 } from "../variables";
-import { ACCENT, INK, INK_SOFT } from "./electronModel";
+import { ACCENT, INK, INK_SOFT, roomColor } from "./electronModel";
 import { AddressBuildingFigure } from "./electronAddressFigure";
 
 // ── Atom zoom model ─────────────────────────────────────────────────────────
@@ -304,15 +305,24 @@ export const whereElectronsLiveBlocks: ReactElement[] = [
 
     <StackLayout key="layout-electrons-live-intro" maxWidth="xl">
         <Block id="electrons-live-intro" padding="sm">
-            <EditableParagraph id="para-electrons-live-intro" blockId="electrons-live-intro">In this lesson you will learn to read and write electron configurations — the short codes, like 1s² 2s² 2p⁴, that say exactly where every electron in an atom lives. Those codes matter because they decide how an element behaves: why sodium fizzes violently in water while neon does nothing, why carbon makes four bonds, why the periodic table has the shape it does.</EditableParagraph>
+            <EditableParagraph id="para-electrons-live-intro" blockId="electrons-live-intro">
+                In this lesson you will learn to read and write electron configurations: the
+                short codes, like{" "}
+                <InlineFormula
+                    latex="\clr{roomS}{1s^2} \, \clr{roomS}{2s^2} \, \clr{roomP}{2p^4}"
+                    colorMap={{ roomS: roomColor("s"), roomP: roomColor("p") }}
+                />
+                , that say exactly where every electron in an atom lives. Those codes matter
+                because they decide how an element behaves: why sodium fizzes violently in water
+                while neon does nothing, why carbon makes four bonds, why the periodic table has
+                the shape it does.
+            </EditableParagraph>
         </Block>
     </StackLayout>,
 
     <StackLayout key="layout-electrons-live-heading" maxWidth="xl">
         <Block id="electrons-live-heading" padding="sm">
-            <EditableH2 id="h2-electrons-live-heading" blockId="electrons-live-heading">
-                1. Where do electrons live?
-            </EditableH2>
+            <EditableH2 id="h2-electrons-live-heading" blockId="electrons-live-heading">Where do electrons live?</EditableH2>
         </Block>
     </StackLayout>,
 
@@ -339,8 +349,8 @@ export const whereElectronsLiveBlocks: ReactElement[] = [
                 >
                     electron cloud
                 </InlineLinkedHighlight>{" "}
-                takes up almost all the room. Almost everything an atom does in chemistry — what
-                it bonds with, how it reacts — depends on where those electrons are.
+                takes up almost all the room. Almost everything an atom does in chemistry, what
+                it bonds with and how it reacts, depends on where those electrons are.
             </EditableParagraph>
         </Block>
     </StackLayout>,
@@ -355,7 +365,7 @@ export const whereElectronsLiveBlocks: ReactElement[] = [
         <Block id="electrons-live-zoom-reading" padding="sm">
             <EditableParagraph id="para-electrons-live-zoom-reading" blockId="electrons-live-zoom-reading">
                 The picture starts at the size of a whole atom and the nucleus is drawn at its true
-                size — a point you cannot see. With the zoom at{" "}
+                size, a point you cannot see. With the zoom at{" "}
                 <InlineScrubbleNumber
                     id="scrub-electrons-live-zoom"
                     varName="atomZoom"

@@ -204,7 +204,7 @@ function AddElectronTrigger() {
 function NewestSubshellReadout() {
     const count = useVar<number>("fillingElectronCount", 18);
     const newest = lastFilledSubshell(count);
-    if (!newest) return <span>no subshell yet — the ladder is empty</span>;
+    if (!newest) return <span>no subshell yet, the ladder is empty</span>;
     return (
         <span>
             the <span style={{ fontWeight: 700, color: roomColor(newest.room) }}>{newest.key}</span> rung
@@ -287,7 +287,7 @@ export const fillingOrderBlocks: ReactElement[] = [
                 shell number and the room type, where <InlineFormula latex="\clr{roomS}{s}" colorMap={{ roomS: roomColor("s") }} /> counts as 0,{" "}
                 <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} /> as 1 and <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> as 2. For{" "}
                 <InlineFormula latex="\clr{roomS}{4s}" colorMap={{ roomS: roomColor("s") }} /> the sum is <InlineFormula latex="4 + 0 = 4" />, and
-                for <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} /> it is <InlineFormula latex="3 + 2 = 5" /> — so{" "}
+                for <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} /> it is <InlineFormula latex="3 + 2 = 5" />, so{" "}
                 <InlineFormula latex="\clr{roomS}{4s}" colorMap={{ roomS: roomColor("s") }} /> fills first. When two subshells give the same sum,
                 the one with the smaller shell number goes first.
             </EditableParagraph>
@@ -303,8 +303,8 @@ export const fillingOrderBlocks: ReactElement[] = [
                     varName="fillingNineteenthAnswer"
                     correctValue="4s"
                     position="terminal"
-                    successMessage="— yes: 4s has the sum 4 + 0 = 4, lower than 3d's 3 + 2 = 5"
-                    failureMessage="— not quite."
+                    successMessage="(yes: 4s has the sum 4 + 0 = 4, lower than 3d's 3 + 2 = 5)"
+                    failureMessage="(not quite)"
                     hint="Compare the sums: 4s gives 4 + 0, 3d gives 3 + 2"
                     reviewBlockId="filling-order-ladder"
                     reviewLabel="Drop the nineteenth electron on the ladder"

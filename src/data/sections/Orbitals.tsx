@@ -108,7 +108,7 @@ function OrbitalBox({
             {electrons >= 2 && <ElectronArrow x={x + BOX / 2 + 12} y={BOX_Y + BOX / 2} up={false} color={color} />}
             {refused && (
                 <text x={x + BOX / 2} y={BOX_Y - 10} textAnchor="middle" fontSize="11" fill={REFUSE_COLOR} fontWeight={600}>
-                    full — two per desk
+                    full: two per desk
                 </text>
             )}
             <text
@@ -225,7 +225,7 @@ function OrbitalBoxesFigure() {
         <Figure
             id="orbitals-boxes"
             onReset={() => setVar("orbitalBoxes", EMPTY_BOXES)}
-            caption="Each box is one orbital — one desk. Click a desk to seat an electron; the second electron sits with the opposite spin, and a third is refused. Switch rooms with the tabs."
+            caption="Each box is one orbital, one desk. Click a desk to seat an electron; the second electron sits with the opposite spin, and a third is refused. Switch rooms with the tabs."
         >
             <OrbitalBoxesDrawing />
             <InteractionHintSequence
@@ -281,7 +281,7 @@ export const orbitalsBlocks: ReactElement[] = [
     <StackLayout key="layout-orbitals-heading" maxWidth="xl">
         <Block id="orbitals-heading" padding="sm">
             <EditableH2 id="h2-orbitals-heading" blockId="orbitals-heading">
-                4. Orbitals — the desks in each room
+                4. Orbitals: the desks in each room
             </EditableH2>
         </Block>
     </StackLayout>,
@@ -290,7 +290,7 @@ export const orbitalsBlocks: ReactElement[] = [
         <Block id="orbitals-definition" padding="sm">
             <EditableParagraph id="para-orbitals-definition" blockId="orbitals-definition">
                 Inside every room there are desks, and an orbital is one of those desks. An
-                orbital is not a track the electron runs along — it is a region of space where
+                orbital is not a track the electron runs along; it is a region of space where
                 that electron is very likely to be found. An <InlineFormula latex="\clr{roomS}{s}" colorMap={{ roomS: roomColor("s") }} /> orbital
                 is{" "}
                 <InlineLinkedHighlight
@@ -357,7 +357,7 @@ export const orbitalsBlocks: ReactElement[] = [
                     dumbbell
                 </InlineLinkedHighlight>
                 , pointing along <InlineFormula latex="x" />, <InlineFormula latex="y" /> or{" "}
-                <InlineFormula latex="z" /> — which is why a{" "}
+                <InlineFormula latex="z" />, which is why a{" "}
                 <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} /> room has exactly three
                 desks. And four of the five{" "}
                 <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> orbitals are the same{" "}
@@ -373,7 +373,7 @@ export const orbitalsBlocks: ReactElement[] = [
                     cloverleaf
                 </InlineLinkedHighlight>{" "}
                 lying in different planes, with{" "}
-                <InlineFormula latex="\clr{roomD}{d_{z^2}}" colorMap={{ roomD: roomColor("d") }} /> the odd one out —
+                <InlineFormula latex="\clr{roomD}{d_{z^2}}" colorMap={{ roomD: roomColor("d") }} /> the odd one out:
                 five desks in a <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> room.
             </EditableParagraph>
         </Block>
@@ -383,7 +383,7 @@ export const orbitalsBlocks: ReactElement[] = [
         <Block id="orbitals-two-electrons" padding="sm">
             <EditableParagraph id="para-orbitals-two-electrons" blockId="orbitals-two-electrons">
                 The key rule is short: every orbital holds a maximum of two electrons, and those
-                two must have opposite spins. Two electrons per desk, no exceptions — whether the
+                two must have opposite spins. Two electrons per desk, no exceptions, whether the
                 desk is in an <InlineFormula latex="\clr{roomS}{s}" colorMap={{ roomS: roomColor("s") }} /> room or a <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} />{" "}
                 room. Try to break the rule below.
             </EditableParagraph>
@@ -420,7 +420,7 @@ export const orbitalsBlocks: ReactElement[] = [
                 Check this against shell capacities from earlier. Shell 3 holds{" "}
                 <InlineFormula latex="\clr{roomS}{3s}" colorMap={{ roomS: roomColor("s") }} /> plus <InlineFormula latex="\clr{roomP}{3p}" colorMap={{ roomP: roomColor("p") }} /> plus{" "}
                 <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} />, which is{" "}
-                <InlineFormula latex="2 + 6 + 10 = 18" /> electrons — exactly the{" "}
+                <InlineFormula latex="2 + 6 + 10 = 18" /> electrons, exactly the{" "}
                 <InlineFormula latex="2\clr{n}{n}^2" colorMap={{ n: N_COLOR }} /> answer for <InlineFormula latex="\clr{n}{n} = \clr{n}{3}" colorMap={{ n: N_COLOR }} />. The two
                 rules agree because they are describing the same building.
             </EditableParagraph>
@@ -436,8 +436,8 @@ export const orbitalsBlocks: ReactElement[] = [
                     varName="orbitalFRoomAnswer"
                     correctValue="14"
                     position="terminal"
-                    successMessage="— exactly: 7 desks × 2 electrons = 14"
-                    failureMessage="— not quite."
+                    successMessage="(exactly: 7 desks × 2 electrons = 14)"
+                    failureMessage="(not quite)"
                     hint="Count the desks, then seat two electrons at each one"
                     reviewBlockId="orbitals-boxes"
                     reviewLabel="Seat electrons in a room"

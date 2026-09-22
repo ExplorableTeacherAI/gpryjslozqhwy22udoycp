@@ -134,7 +134,7 @@ function SubshellRow({
             </text>
             {refused && (
                 <text x={SLOT_X + width + 60} y={y + 4} fontSize="11" fill={REFUSE_COLOR} fontWeight={600}>
-                    {full ? "already full" : "not yet — lower rungs first"}
+                    {full ? "already full" : "not yet: lower rungs first"}
                 </text>
             )}
         </g>
@@ -234,7 +234,7 @@ function ConfigurationBuilderDrawing() {
                 style={{ fontVariantNumeric: "tabular-nums" }}
             >
                 {placed === 0 ? (
-                    "—"
+                    "nothing placed yet"
                 ) : (
                     <>
                         <tspan>{`${element.symbol}: `}</tspan>
@@ -410,7 +410,7 @@ export const writingConfigurationsBlocks: ReactElement[] = [
         <Block id="writing-configurations-method" padding="sm">
             <EditableParagraph id="para-writing-configurations-method" blockId="writing-configurations-method">
                 The method is always the same three steps. First, find how many electrons the
-                neutral atom has — that is its atomic number. Second, hand them out along the
+                neutral atom has; that is its atomic number. Second, hand them out along the
                 filling order, filling each subshell to its limit of 2, 6 or 10 before moving on.
                 Third, write down the subshells you used, in order, with their counts.
             </EditableParagraph>
@@ -441,10 +441,10 @@ export const writingConfigurationsBlocks: ReactElement[] = [
         <Block id="writing-configurations-builder-intro" padding="sm">
             <EditableParagraph id="para-writing-configurations-builder-intro" blockId="writing-configurations-builder-intro">
                 Now do the handing-out yourself. The builder below holds <WorkedElementName />'s{" "}
-                <WorkedElectronCount /> electrons — the same element as the example, so changing
+                <WorkedElectronCount /> electrons, the same element as the example, so changing
                 one changes the other. Click{" "}
                 <InlineFormula latex="\clr{roomS}{1s}" colorMap={{ roomS: roomColor("s") }} /> first, then keep
-                clicking the next subshell in the filling order — a click on the wrong subshell is
+                clicking the next subshell in the filling order. A click on the wrong subshell is
                 refused, and the configuration is written underneath as you go.
             </EditableParagraph>
         </Block>
@@ -468,7 +468,7 @@ export const writingConfigurationsBlocks: ReactElement[] = [
                 , which is <ElementNameReadout />, the full configuration is{" "}
                 <ConfigurationReadout />, and the raised numbers add to <ConfigurationSumReadout />.
                 Beyond calcium the <InlineFormula latex="\clr{roomD}{3d}" colorMap={{ roomD: roomColor("d") }} /> room starts to fill, and the same
-                method still works — you simply carry on down the filling order.
+                method still works: you simply carry on down the filling order.
             </EditableParagraph>
         </Block>
     </StackLayout>,
@@ -482,8 +482,8 @@ export const writingConfigurationsBlocks: ReactElement[] = [
                     varName="chlorineLastCountAnswer"
                     correctValue="5"
                     position="terminal"
-                    successMessage="— right: sulfur's 3p⁴ gains one more electron, and 3p still has room for it"
-                    failureMessage="— not quite."
+                    successMessage="(right: sulfur's 3p⁴ gains one more electron, and 3p still has room for it)"
+                    failureMessage="(not quite)"
                     hint="Sulfur ends in 3p⁴ and the 3p room holds up to 6"
                     reviewBlockId="writing-configurations-builder"
                     reviewLabel="Build chlorine to check"

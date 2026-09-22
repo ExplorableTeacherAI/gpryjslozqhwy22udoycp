@@ -142,7 +142,7 @@ function SubshellFloorsDrawing() {
             {/* Ground floor: the nucleus */}
             <rect x={24} y={GROUND_Y + 2} width={VIEW.width - 48} height={16} rx="4" fill={INK} />
             <text x={VIEW.width / 2} y={GROUND_Y + 14} textAnchor="middle" fontSize="11" fill="#FFFFFF" fontWeight={600}>
-                nucleus — ground floor
+                nucleus, the ground floor
             </text>
 
             {Array.from({ length: FLOOR_COUNT }, (_, index) => {
@@ -197,7 +197,7 @@ export const subshellsBlocks: ReactElement[] = [
     <StackLayout key="layout-subshells-heading" maxWidth="xl">
         <Block id="subshells-heading" padding="sm">
             <EditableH2 id="h2-subshells-heading" blockId="subshells-heading">
-                3. Subshells — the rooms on each floor
+                3. Subshells: the rooms on each floor
             </EditableH2>
         </Block>
     </StackLayout>,
@@ -205,7 +205,7 @@ export const subshellsBlocks: ReactElement[] = [
     <StackLayout key="layout-subshells-definition" maxWidth="xl">
         <Block id="subshells-definition" padding="sm">
             <EditableParagraph id="para-subshells-definition" blockId="subshells-definition">
-                A floor of a building is not one big open space — it is divided into rooms. In
+                A floor of a building is not one big open space; it is divided into rooms. In
                 the same way, a shell is divided into subshells. The rooms have names rather than
                 numbers: <InlineFormula latex="\clr{roomS}{s}" colorMap={{ roomS: roomColor("s") }} />, <InlineFormula latex="\clr{roomP}{p}" colorMap={{ roomP: roomColor("p") }} />,{" "}
                 <InlineFormula latex="\clr{roomD}{d}" colorMap={{ roomD: roomColor("d") }} /> and <InlineFormula latex="\clr{roomF}{f}" colorMap={{ roomF: roomColor("f") }} />. Electrons in
@@ -259,8 +259,8 @@ export const subshellsBlocks: ReactElement[] = [
                     varName="subshellThirdRoomAnswer"
                     correctValue="3d"
                     position="terminal"
-                    successMessage="— right: floor 3, and the third letter in the order s, p, d"
-                    failureMessage="— not quite."
+                    successMessage="(right: floor 3, and the third letter in the order s, p, d)"
+                    failureMessage="(not quite)"
                     hint="The rooms are added in the order s, then p, then d"
                     reviewBlockId="subshells-floors"
                     reviewLabel="Open floor 3 to check"

@@ -236,7 +236,7 @@ export function OrbitalShapesFigure() {
                 setVar("orbitalShapeHighlight", "");
                 resetRotation.current?.();
             }}
-            caption="The one s orbital, the three p orbitals and the five d orbitals, each on its own x, y, z axes, seen face-on with z pointing up. They turn slowly by themselves; drag anywhere to turn them yourself, or pause them. Every p orbital is the same dumbbell pointing along a different axis, and four of the d orbitals are the same cloverleaf in different planes — only dz² looks different."
+            caption="The one s orbital, the three p orbitals and the five d orbitals, each on its own x, y, z axes, seen face-on with z pointing up. They turn slowly by themselves; drag anywhere to turn them yourself, or pause them. Every p orbital is the same dumbbell pointing along a different axis, and four of the d orbitals are the same cloverleaf in different planes; only dz² looks different."
         >
             <OrbitalShapesScene resetRef={resetRotation} />
             <InteractionHintSequence

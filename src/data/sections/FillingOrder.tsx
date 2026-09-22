@@ -215,9 +215,7 @@ function NewestSubshellReadout() {
 export const fillingOrderBlocks: ReactElement[] = [
     <StackLayout key="layout-filling-order-heading" maxWidth="xl">
         <Block id="filling-order-heading" padding="sm">
-            <EditableH2 id="h2-filling-order-heading" blockId="filling-order-heading">
-                5. The filling order
-            </EditableH2>
+            <EditableH2 id="h2-filling-order-heading" blockId="filling-order-heading">The filling order</EditableH2>
         </Block>
     </StackLayout>,
 

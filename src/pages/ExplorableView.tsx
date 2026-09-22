@@ -1,3 +1,4 @@
+import { useActivityRecovery } from "@/lib/activityRecovery";
 import { useEffect, useState } from "react";
 import { BlockRenderer } from "@/components/templates";
 import { explorables } from "@/data/explorables";
@@ -23,6 +24,7 @@ const ExplorableView = () => {
     // used by the teacher's explorable editor page. Students always get
     // preview mode.
     const { isEditor } = useAppMode();
+    const hydrated = useActivityRecovery(id, !isEditor && !!entry);
     const [dots, setDots] = useState("");
 
     // Embedded in the tutor chat, the explorable must sit directly on the
@@ -50,7 +52,7 @@ const ExplorableView = () => {
     // Report the content height to the embedding chat page so the iframe can
     // size itself to the explorable (no inner scrollbar).
     useEffect(() => {
-        if (!entry || !id || window.parent === window) return;
+        if (!entry || !id || !hydrated || window.parent === window) return;
         let lastHeight = 0;
         const sendHeight = () => {
             const height = Math.ceil(document.documentElement.scrollHeight);
@@ -63,6 +65,10 @@ const ExplorableView = () => {
             }
         };
         sendHeight();
+        window.parent.postMessage({
+            type: "mathvibe-activity-ready", explorableId: id,
+            channel: new URLSearchParams(window.location.search).get("activityChannel"),
+        }, "*");
         const observer = new ResizeObserver(sendHeight);
         observer.observe(document.body);
         // Fallback for late layout shifts (KaTeX, charts, fonts)
@@ -71,20 +77,20 @@ const ExplorableView = () => {
             observer.disconnect();
             clearInterval(timer);
         };
-    }, [entry, id]);
+    }, [entry, id, hydrated]);
 
-    // Report student interactions (variable changes: answers, drags)
+    // Report student interactions (variable changes: scrubs, answers, toggles)
     // to the embedding chat page, so the tutor can react without the student
     // having to retype what they did.
     useEffect(() => {
-        if (!entry || !id || window.parent === window) return;
+        if (!entry || !id || !hydrated || window.parent === window) return;
         let prev = useVariableStore.getState().variables;
         const unsubscribe = useVariableStore.subscribe((state) => {
             const vars = state.variables;
             if (vars === prev) return;
             for (const [name, value] of Object.entries(vars)) {
                 if (prev[name] !== value) {
-                    // Interaction-gate variables are implementation
+                    // RevealOnInteraction and similar gates are implementation
                     // details, not concept variables the tutor should discuss.
                     const isInternalState = /_(explored|interacted|revealed)$/.test(name);
                     if (isInternalState) continue;
@@ -96,7 +102,7 @@ const ExplorableView = () => {
                             previousValue: prev[name],
                             value,
                             // Generic store changes are exploration. Assessed
-                            // answers are reported explicitly by the lesson components.
+                            // answers are reported explicitly by InlineFeedback.
                             interactionKind: "variable_change",
                         },
                         "*"
@@ -106,7 +112,7 @@ const ExplorableView = () => {
             prev = vars;
         });
         return () => unsubscribe();
-    }, [entry, id]);
+    }, [entry, id, hydrated]);
 
     if (!entry) {
         return (
@@ -119,11 +125,14 @@ const ExplorableView = () => {
         );
     }
 
+    if (!hydrated) return <div role="status">Restoring your activity…</div>;
+
     return (
         <div className={`relative ${isEditor ? "bg-white" : "bg-transparent"}`}>
             <BlockRenderer
                 initialBlocks={entry.blocks}
                 isPreview={!isEditor}
+                hideLegend
                 embedded
             />
         </div>

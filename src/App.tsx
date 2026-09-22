@@ -4,10 +4,11 @@ import { useEffect } from "react";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { AppModeProvider } from "@/contexts/AppModeContext";
 import { EditingProvider } from "@/contexts/EditingContext";
+import { InlineInteractionHintProvider } from "@/contexts/InlineInteractionHintContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { HierarchyReporter } from "./components/HierarchyReporter";
-import { HyperlinkEditorModal } from "./components/utility";
+import { InlineFormulaEditorModal, ScrubbleNumberEditorModal, ClozeInputEditorModal, ClozeChoiceEditorModal, ToggleEditorModal, TooltipEditorModal, TriggerEditorModal, HyperlinkEditorModal, SpotColorEditorModal, LinkedHighlightEditorModal, FormulaBlockEditorModal } from "./components/utility";
 
 const queryClient = new QueryClient();
 
@@ -20,8 +21,19 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <AppModeProvider>
         <EditingProvider>
+          <InlineInteractionHintProvider>
             <HierarchyReporter />
+            <ScrubbleNumberEditorModal />
+            <ClozeInputEditorModal />
+            <ClozeChoiceEditorModal />
+            <ToggleEditorModal />
+            <TooltipEditorModal />
+            <TriggerEditorModal />
             <HyperlinkEditorModal />
+            <InlineFormulaEditorModal />
+            <SpotColorEditorModal />
+            <LinkedHighlightEditorModal />
+            <FormulaBlockEditorModal />
             <TooltipProvider>
               <HashRouter>
                 <Routes>
@@ -31,6 +43,7 @@ const App = () => {
                 </Routes>
               </HashRouter>
             </TooltipProvider>
+          </InlineInteractionHintProvider>
         </EditingProvider>
       </AppModeProvider>
     </QueryClientProvider>

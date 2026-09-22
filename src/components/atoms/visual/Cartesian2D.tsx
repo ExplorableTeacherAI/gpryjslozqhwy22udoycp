@@ -9,7 +9,7 @@ import {
     Vector,
     useMovablePoint,
 } from "mafs";
-import { useSetVar } from "@/stores";
+import { useVar, useSetVar } from "@/stores/variableStore";
 
 // ── Plot item type definitions ────────────────────────────────────────────────
 
@@ -23,6 +23,11 @@ export interface FunctionPlot {
     weight?: number;
     /** Restrict plotting to this x domain */
     domain?: [number, number];
+    /**
+     * When this highlightId matches the active linked highlight variable
+     * the plot is visually emphasized; others are dimmed.
+     */
+    highlightId?: string;
 }
 
 /** Parametric curve — [x, y] as a function of parameter t */
@@ -34,6 +39,7 @@ export interface ParametricPlot {
     tRange?: [number, number];
     color?: string;
     weight?: number;
+    highlightId?: string;
 }
 
 /** A fixed (non-interactive) dot */
@@ -42,6 +48,7 @@ export interface StaticPoint {
     x: number;
     y: number;
     color?: string;
+    highlightId?: string;
 }
 
 /**
@@ -55,6 +62,7 @@ export interface VectorPlot {
     tip: [number, number];
     color?: string;
     weight?: number;
+    highlightId?: string;
 }
 
 /** A straight line segment between two points */
@@ -65,6 +73,7 @@ export interface SegmentPlot {
     color?: string;
     weight?: number;
     style?: "solid" | "dashed";
+    highlightId?: string;
 }
 
 /** A circle with a given center and radius */
@@ -75,6 +84,7 @@ export interface CirclePlot {
     color?: string;
     fillOpacity?: number;
     strokeStyle?: "solid" | "dashed";
+    highlightId?: string;
 }
 
 export type PlotItem =
@@ -155,24 +165,69 @@ export interface Cartesian2DProps {
     /** Extra Tailwind / CSS class for the wrapper div */
     className?: string;
     /**
+     * Variable name in the global store that holds the currently active
+     * highlight ID.  When set, each plot item's `highlightId` is compared
+     * against the store value to dim/emphasize elements.
+     *
+     * Use together with `InlineLinkedHighlight` components that share
+     * the same `varName`.
+     */
+    highlightVarName?: string;
+    /**
      * Variable name in the global store to flip to `true` the first time the
      * student genuinely drags one of the movable points (the initial mount
-     * sync is ignored).
-     * Pair it with a component that watches the same variable.
+     * sync is ignored). Pair it with a `RevealOnInteraction` that watches the
+     * same variable to reveal a question only after the student has explored.
      */
     interactionVar?: string;
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
+interface HighlightStyle {
+    opacity: number;
+    weight: number;
+    isHighlighted: boolean;
+}
+
+/**
+ * Compute opacity / weight adjustments driven by the active highlight ID.
+ * This is a plain function (not a hook) so it is safe to call inside loops
+ * and switch statements.
+ */
+function getHighlightStyle(
+    highlightId: string | undefined,
+    activeId: string | null | undefined,
+    baseWeight = 2
+): HighlightStyle {
+    const isHighlighted = Boolean(highlightId && activeId === highlightId);
+    const hasActiveHighlight = activeId !== null && activeId !== undefined;
+    return {
+        opacity: isHighlighted
+            ? 1
+            : hasActiveHighlight && highlightId
+                ? 0.15
+                : 0.9,
+        weight: isHighlighted ? Math.max(baseWeight * 1.5, 4) : baseWeight,
+        isHighlighted,
+    };
+}
+
 /** Render a single PlotItem (plain function, NOT a hook component) */
-function renderPlotItem(item: PlotItem, index: number): React.ReactNode {
+function renderPlotItem(
+    item: PlotItem,
+    index: number,
+    activeId: string | null | undefined
+): React.ReactNode {
     const key = `cplot-${index}`;
 
     switch (item.type) {
         case "function": {
-            const opacity = 0.9;
-            const weight = item.weight ?? 2;
+            const { opacity, weight } = getHighlightStyle(
+                item.highlightId,
+                activeId,
+                item.weight ?? 2
+            );
             return (
                 <Plot.OfX
                     key={key}
@@ -186,8 +241,11 @@ function renderPlotItem(item: PlotItem, index: number): React.ReactNode {
         }
 
         case "parametric": {
-            const opacity = 0.9;
-            const weight = item.weight ?? 2;
+            const { opacity, weight } = getHighlightStyle(
+                item.highlightId,
+                activeId,
+                item.weight ?? 2
+            );
             return (
                 <Plot.Parametric
                     key={key}
@@ -201,7 +259,7 @@ function renderPlotItem(item: PlotItem, index: number): React.ReactNode {
         }
 
         case "point": {
-            const opacity = 0.9;
+            const { opacity } = getHighlightStyle(item.highlightId, activeId);
             return (
                 <Point
                     key={key}
@@ -215,8 +273,11 @@ function renderPlotItem(item: PlotItem, index: number): React.ReactNode {
 
         case "vector": {
             const tail = item.tail ?? ([0, 0] as [number, number]);
-            const opacity = 0.9;
-            const weight = item.weight ?? 2;
+            const { opacity, weight } = getHighlightStyle(
+                item.highlightId,
+                activeId,
+                item.weight ?? 2
+            );
             return (
                 <g key={key} opacity={opacity}>
                     <Vector
@@ -230,8 +291,11 @@ function renderPlotItem(item: PlotItem, index: number): React.ReactNode {
         }
 
         case "segment": {
-            const opacity = 0.9;
-            const weight = item.weight ?? 2;
+            const { opacity, weight } = getHighlightStyle(
+                item.highlightId,
+                activeId,
+                item.weight ?? 2
+            );
             return (
                 <Line.Segment
                     key={key}
@@ -246,7 +310,7 @@ function renderPlotItem(item: PlotItem, index: number): React.ReactNode {
         }
 
         case "circle": {
-            const opacity = 0.9;
+            const { opacity } = getHighlightStyle(item.highlightId, activeId);
             return (
                 <Circle
                     key={key}
@@ -257,6 +321,60 @@ function renderPlotItem(item: PlotItem, index: number): React.ReactNode {
                     strokeStyle={item.strokeStyle}
                 />
             );
+        }
+    }
+}
+
+// ── Hit-testing helpers (graph → store hover) ────────────────────────────────
+
+/** Distance from point (px, py) to a line segment from a to b */
+function distToSegment(
+    px: number, py: number,
+    a: [number, number], b: [number, number]
+): number {
+    const dx = b[0] - a[0], dy = b[1] - a[1];
+    const len2 = dx * dx + dy * dy;
+    if (len2 === 0) return Math.hypot(px - a[0], py - a[1]);
+    let t = ((px - a[0]) * dx + (py - a[1]) * dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(px - (a[0] + t * dx), py - (a[1] + t * dy));
+}
+
+/** Distance from a point (mx, my) to a PlotItem in math coordinates */
+function distToPlotItem(mx: number, my: number, item: PlotItem): number {
+    switch (item.type) {
+        case "point":
+            return Math.hypot(mx - item.x, my - item.y);
+        case "segment":
+            return distToSegment(mx, my, item.point1, item.point2);
+        case "vector": {
+            const tail = (item.tail ?? [0, 0]) as [number, number];
+            return distToSegment(mx, my, tail, item.tip);
+        }
+        case "circle": {
+            const d = Math.hypot(mx - item.center[0], my - item.center[1]);
+            return Math.abs(d - item.radius);
+        }
+        case "function": {
+            try {
+                if (item.domain && (mx < item.domain[0] || mx > item.domain[1])) {
+                    return Infinity;
+                }
+                return Math.abs(my - item.fn(mx));
+            } catch { return Infinity; }
+        }
+        case "parametric": {
+            const [t0, t1] = item.tRange ?? [0, 2 * Math.PI];
+            let minDist = Infinity;
+            for (let i = 0; i <= 80; i++) {
+                const t = t0 + (t1 - t0) * (i / 80);
+                try {
+                    const [px, py] = item.xy(t);
+                    const d = Math.hypot(mx - px, my - py);
+                    if (d < minDist) minDist = d;
+                } catch { /* skip */ }
+            }
+            return minDist;
         }
     }
 }
@@ -273,6 +391,9 @@ function renderPlotItem(item: PlotItem, index: number): React.ReactNode {
  * - **Static elements** — points, line segments, circles, vectors
  * - **Movable points** (up to 4) — draggable handles with `onChange` callbacks
  * - **Dynamic plots** — geometry derived from the current movable-point positions
+ * - **Linked Highlight** — per-element `highlightId` dims/emphasizes items
+ *   in sync with `InlineLinkedHighlight` nodes elsewhere on the page
+ *   via the global variable store (`highlightVarName` prop)
  *
  * ## Basic usage
  * ```tsx
@@ -298,6 +419,21 @@ function renderPlotItem(item: PlotItem, index: number): React.ReactNode {
  * />
  * ```
  *
+ * ## With InlineLinkedHighlight
+ * ```tsx
+ * <EditableParagraph id="para-trig" blockId="block-trig">
+ *   The <InlineLinkedHighlight varName="myHighlight" highlightId="sin">
+ *     sine curve
+ *   </InlineLinkedHighlight> oscillates between −1 and 1.
+ * </EditableParagraph>
+ * <Cartesian2D
+ *   highlightVarName="myHighlight"
+ *   plots={[
+ *     { type: "function", fn: Math.sin, color: "#3b82f6", highlightId: "sin" },
+ *     { type: "function", fn: Math.cos, color: "#f59e0b", highlightId: "cos" },
+ *   ]}
+ * />
+ * ```
  */
 export function Cartesian2D({
     height = 400,
@@ -308,8 +444,15 @@ export function Cartesian2D({
     showGrid = true,
     subdivisions = 1,
     className = "",
+    highlightVarName,
     interactionVar,
 }: Cartesian2DProps) {
+    // Read the active highlight ID from the global variable store
+    const activeId = useVar(highlightVarName ?? '', '') as string;
+    // Treat empty string as "nothing highlighted"
+    const effectiveActiveId = activeId || null;
+
+    // Write support: set highlight on hover over graph elements
     const setVar = useSetVar();
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -385,7 +528,7 @@ export function Cartesian2D({
 
     // ── Sync external position → movable point ──────────────────────────
     // Only applies when position comes from an external source (e.g. text
-    // typing) — NOT from the drag round-trip through the store.
+    // scrubbing) — NOT from the drag round-trip through the store.
     const extPos0x = movablePoints[0]?.position?.[0];
     const extPos0y = movablePoints[0]?.position?.[1];
     const extPos1x = movablePoints[1]?.position?.[0];
@@ -424,11 +567,67 @@ export function Cartesian2D({
     const dynItems = dynamicPlots ? dynamicPlots(activePoints) : [];
     const allPlots = [...plots, ...dynItems];
 
+    // ── Hover → store (bidirectional highlight) ───────────────────────────
+    // Keep a ref to the latest plots so callbacks don't go stale
+    const plotsRef = useRef(allPlots);
+    plotsRef.current = allPlots;
+    const viewBoxRef = useRef(viewBox);
+    viewBoxRef.current = viewBox;
+
+    const handleMouseMove = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            if (!highlightVarName) return;
+            const wrapper = wrapperRef.current;
+            if (!wrapper) return;
+
+            const svg = wrapper.querySelector("svg");
+            if (!svg) return;
+
+            const svgRect = svg.getBoundingClientRect();
+            const relX = e.clientX - svgRect.left;
+            const relY = e.clientY - svgRect.top;
+
+            const vb = viewBoxRef.current;
+            const [xMin, xMax] = vb.x;
+            const [yMin, yMax] = vb.y;
+
+            // Approximate math-coordinate conversion
+            const mathX = xMin + (relX / svgRect.width) * (xMax - xMin);
+            const mathY = yMax - (relY / svgRect.height) * (yMax - yMin);
+
+            // Adaptive hit threshold (8 % of the smaller axis range)
+            const threshold = Math.min(xMax - xMin, yMax - yMin) * 0.08;
+
+            let closestId: string | null = null;
+            let closestDist = Infinity;
+
+            for (const item of plotsRef.current) {
+                if (!item.highlightId) continue;
+                const d = distToPlotItem(mathX, mathY, item);
+                if (d < threshold && d < closestDist) {
+                    closestDist = d;
+                    closestId = item.highlightId;
+                }
+            }
+
+            setVar(highlightVarName, closestId ?? "");
+        },
+        [highlightVarName, setVar]
+    );
+
+    const handleMouseLeave = useCallback(() => {
+        if (highlightVarName) {
+            setVar(highlightVarName, "");
+        }
+    }, [highlightVarName, setVar]);
+
     // ── Render ─────────────────────────────────────────────────────────────
     return (
         <div
             ref={wrapperRef}
             className={`w-full overflow-hidden rounded-xl ${className}`}
+            onMouseMove={highlightVarName ? handleMouseMove : undefined}
+            onMouseLeave={highlightVarName ? handleMouseLeave : undefined}
         >
             <Mafs
                 height={height}
@@ -439,7 +638,7 @@ export function Cartesian2D({
                 )}
 
                 {/* Static + dynamic plot items */}
-                {allPlots.map((item, i) => renderPlotItem(item, i))}
+                {allPlots.map((item, i) => renderPlotItem(item, i, effectiveActiveId))}
 
                 {/* Movable point handles — rendered in fixed order */}
                 {activeCount > 0 && mp0.element}

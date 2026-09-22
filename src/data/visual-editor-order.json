@@ -285,26 +285,20 @@
     },
     {
       "id": "layout-subshells-floors",
-      "type": "stack",
+      "type": "split",
       "columns": [
         [
           "subshells-naming"
-        ]
-      ],
-      "props": {
-        "maxWidth": "xl"
-      }
-    },
-    {
-      "id": "layout-subshells-table",
-      "type": "stack",
-      "columns": [
+        ],
         [
           "subshells-table"
         ]
       ],
       "props": {
-        "maxWidth": "xl"
+        "ratio": "1:1",
+        "gap": "lg",
+        "reverse": false,
+        "align": "start"
       }
     },
     {

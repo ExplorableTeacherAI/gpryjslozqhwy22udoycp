@@ -220,9 +220,7 @@ function ShellNumberCapacityReadout() {
 export const shellsBlocks: ReactElement[] = [
     <StackLayout key="layout-shells-heading" maxWidth="xl">
         <Block id="shells-heading" padding="sm">
-            <EditableH2 id="h2-shells-heading" blockId="shells-heading">
-                2. Shells: the floors of the building
-            </EditableH2>
+            <EditableH2 id="h2-shells-heading" blockId="shells-heading">Shells: the floors of the building</EditableH2>
         </Block>
     </StackLayout>,
 

@@ -22,22 +22,25 @@ export type AddressLevel = "floor" | "room" | "desk";
 const LEVELS: AddressLevel[] = ["floor", "room", "desk"];
 export const asLevel = (value: string): AddressLevel => (LEVELS.includes(value as AddressLevel) ? (value as AddressLevel) : "floor");
 
-const VIEW = { width: 560, height: 340 };
+const VIEW = { width: 560, height: 420 };
 const FLOOR_COUNT = 3;
-const FLOOR_HEIGHT = 74;
-const FLOOR_GAP = 6;
-const GROUND_Y = VIEW.height - 30;
-const ROOM_X = 118;
-const ROOM_PAD = 7;
-const ROOM_GAP = 12;
+const FLOOR_HEIGHT = 80;
+const BUILDING = { x: 104, width: 360 }; // outer walls
+const WALL_RIGHT = BUILDING.x + BUILDING.width;
+const LOBBY_TOP = VIEW.height - 96;       // ground floor ceiling
+const GROUND_LINE = VIEW.height - 52;     // pavement
+const ROOF_APEX = 46;
+const STAIRS_WIDTH = 26;
+const ROOM_X = BUILDING.x + STAIRS_WIDTH + 12;
+const ROOM_PAD = 6;
+const ROOM_GAP = 10;
 const DESK = 26;
 const DESK_GAP = 4;
-const DESK_HEIGHT = 30;
 
 /** Electrons already living in the building: seven, seated from the bottom up. */
 const SEATED: Record<string, number> = { "1s-1": 2, "2s-1": 2, "2p-1": 2, "2p-2": 1 };
 
-const floorTop = (n: number) => GROUND_Y - n * (FLOOR_HEIGHT + FLOOR_GAP);
+const floorTop = (n: number) => LOBBY_TOP - n * FLOOR_HEIGHT;
 const roomWidth = (room: RoomLetter) => ORBITALS_PER_ROOM[room] * (DESK + DESK_GAP) - DESK_GAP + ROOM_PAD * 2;
 const roomX = (n: number, index: number) =>
     ROOM_X + roomsOnFloor(n).slice(0, index).reduce((x, room) => x + roomWidth(room) + ROOM_GAP, 0);
@@ -56,15 +59,42 @@ export const parseDesk = (key: string): DeskAddress => {
 
 const deskKey = (n: number, room: RoomLetter, desk: number) => `${n}${room}-${desk}`;
 
-function ElectronDots({ cx, cy, count }: { cx: number; cy: number; count: number }) {
-    if (count === 0) return null;
-    const offsets = count === 1 ? [0] : [-5, 5];
+/** A small person standing (or sitting) with feet at (x, y). */
+function Electron({ x, y, seated = false }: { x: number; y: number; seated?: boolean }) {
+    const bodyHeight = seated ? 9 : 12;
     return (
-        <>
-            {offsets.map((dx) => (
-                <circle key={dx} cx={cx + dx} cy={cy} r="3.5" fill={ACCENT} />
-            ))}
-        </>
+        <g>
+            <circle cx={x} cy={y - bodyHeight - 5} r="3.6" fill={ACCENT} />
+            <rect x={x - 4} y={y - bodyHeight} width="8" height={bodyHeight} rx="3.5" fill={ACCENT} />
+        </g>
+    );
+}
+
+/** A desk with a chair; `count` electrons sit at it. */
+function Desk({ x, floorY, count, selected, hovered, onClick, onEnter, onLeave }: {
+    x: number; floorY: number; count: number; selected: boolean; hovered: boolean;
+    onClick: () => void; onEnter: () => void; onLeave: () => void;
+}) {
+    const topY = floorY - 22;
+    return (
+        <g style={{ cursor: "pointer" }} onClick={onClick} onPointerEnter={onEnter} onPointerLeave={onLeave}>
+            {/* highlight pad under the selected / hovered desk */}
+            {(selected || hovered) && (
+                <rect x={x - 2} y={floorY - 44} width={DESK + 4} height={44} rx="5" fill={ACCENT} fillOpacity={selected ? 0.22 : 0.1} stroke={selected ? INK : "none"} strokeWidth="1.5" />
+            )}
+            {/* chair: a small back and seat behind the desk */}
+            <line x1={x + DESK - 1} y1={topY - 16} x2={x + DESK - 1} y2={topY - 3} stroke={INK_SOFT} strokeWidth="2" strokeLinecap="round" />
+            <line x1={x + DESK - 10} y1={topY - 3} x2={x + DESK - 1} y2={topY - 3} stroke={INK_SOFT} strokeWidth="2" strokeLinecap="round" />
+            {/* people seated */}
+            {count >= 1 && <Electron x={x + DESK / 2 - (count === 2 ? 5 : 0)} y={topY - 1} seated />}
+            {count >= 2 && <Electron x={x + DESK / 2 + 5} y={topY - 1} seated />}
+            {/* desk top and legs */}
+            <rect x={x} y={topY} width={DESK} height="4" rx="1.5" fill={INK} />
+            <line x1={x + 3} y1={topY + 4} x2={x + 3} y2={floorY} stroke={INK} strokeWidth="1.5" strokeLinecap="round" />
+            <line x1={x + DESK - 3} y1={topY + 4} x2={x + DESK - 3} y2={floorY} stroke={INK} strokeWidth="1.5" strokeLinecap="round" />
+            {/* hit area */}
+            <rect x={x - 2} y={floorY - 44} width={DESK + 4} height={44} fill="transparent" />
+        </g>
     );
 }
 
@@ -94,102 +124,141 @@ function AddressBuildingDrawing() {
             return address.n === n && address.room === room ? sum + count : sum;
         }, 0);
 
+    const roofY = floorTop(FLOOR_COUNT);
+
     return (
         <svg viewBox={`0 0 ${VIEW.width} ${VIEW.height}`} className="block w-full select-none">
-            {/* Ground floor: the nucleus */}
-            <rect x={24} y={GROUND_Y + 2} width={VIEW.width - 48} height={18} rx="4" fill={INK} />
-            <text x={VIEW.width / 2} y={GROUND_Y + 15} textAnchor="middle" fontSize="11" fill="#FFFFFF" fontWeight={600}>
-                nucleus — the ground floor
+            {/* Pavement and outer shell of the building */}
+            <line x1={24} y1={GROUND_LINE} x2={VIEW.width - 24} y2={GROUND_LINE} stroke={INK_SOFT} strokeWidth="2" strokeLinecap="round" />
+            <rect x={BUILDING.x} y={roofY} width={BUILDING.width} height={GROUND_LINE - roofY} fill="#FFFFFF" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+            <polygon
+                points={`${BUILDING.x - 6},${roofY} ${BUILDING.x + BUILDING.width / 2},${ROOF_APEX} ${WALL_RIGHT + 6},${roofY}`}
+                fill={PAPER_TINT}
+                stroke={INK}
+                strokeWidth="2"
+                strokeLinejoin="round"
+            />
+            <text x={BUILDING.x + BUILDING.width / 2} y={roofY - 12} textAnchor="middle" fontSize="11" fill={INK_SOFT}>
+                one atom
+            </text>
+
+            {/* Stairwell: electrons come in at the bottom and fill upwards */}
+            <rect x={BUILDING.x} y={roofY} width={STAIRS_WIDTH} height={LOBBY_TOP - roofY} fill={PAPER_TINT} stroke="none" />
+            <line x1={BUILDING.x + STAIRS_WIDTH} y1={roofY} x2={BUILDING.x + STAIRS_WIDTH} y2={LOBBY_TOP} stroke={INK_SOFT} strokeWidth="1.5" />
+            {Array.from({ length: Math.floor((LOBBY_TOP - roofY) / 8) }, (_, i) => (
+                <line
+                    key={i}
+                    x1={BUILDING.x + 4}
+                    y1={LOBBY_TOP - 6 - i * 8}
+                    x2={BUILDING.x + STAIRS_WIDTH - 4}
+                    y2={LOBBY_TOP - 6 - i * 8}
+                    stroke={INK_FAINT}
+                    strokeWidth="1"
+                />
+            ))}
+            <line x1={BUILDING.x + STAIRS_WIDTH / 2} y1={LOBBY_TOP - 12} x2={BUILDING.x + STAIRS_WIDTH / 2} y2={roofY + 18} stroke={ACCENT} strokeWidth="2.5" strokeLinecap="round" />
+            <polygon
+                points={`${BUILDING.x + STAIRS_WIDTH / 2},${roofY + 10} ${BUILDING.x + STAIRS_WIDTH / 2 - 5},${roofY + 20} ${BUILDING.x + STAIRS_WIDTH / 2 + 5},${roofY + 20}`}
+                fill={ACCENT}
+            />
+
+            {/* Ground floor: the lobby, with the nucleus in it */}
+            <line x1={BUILDING.x} y1={LOBBY_TOP} x2={WALL_RIGHT} y2={LOBBY_TOP} stroke={INK} strokeWidth="2" />
+            <rect x={BUILDING.x + BUILDING.width / 2 - 14} y={GROUND_LINE - 30} width="28" height="30" rx="3" fill={PAPER_TINT} stroke={INK} strokeWidth="1.5" />
+            <circle cx={BUILDING.x + BUILDING.width / 2 + 8} cy={GROUND_LINE - 15} r="1.5" fill={INK} />
+            <circle cx={BUILDING.x + 80} cy={GROUND_LINE - 18} r="13" fill={INK} />
+            <text x={BUILDING.x + 80} y={GROUND_LINE - 13} textAnchor="middle" fontSize="13" fill="#FFFFFF" fontWeight={700}>
+                +
+            </text>
+            <text x={BUILDING.x + 100} y={GROUND_LINE - 14} fontSize="11" fill={INK} fontWeight={600}>
+                nucleus
+            </text>
+            <text x={WALL_RIGHT - 10} y={GROUND_LINE - 14} textAnchor="end" fontSize="10" fill={INK_SOFT}>
+                ground floor
+            </text>
+            {/* Outside labels for the lobby */}
+            <text x={24} y={LOBBY_TOP + 20} fontSize="12" fill={INK} fontWeight={500}>
+                ground
+            </text>
+            <text x={24} y={LOBBY_TOP + 35} fontSize="11" fill={INK_SOFT}>
+                the nucleus
             </text>
 
             {Array.from({ length: FLOOR_COUNT }, (_, index) => {
                 const n = index + 1;
                 const top = floorTop(n);
+                const floorY = top + FLOOR_HEIGHT; // the slab this floor stands on
                 const isSelectedFloor = n === selected.n;
                 return (
                     <g key={n} opacity={isSelectedFloor ? dim("floor") : highlight ? 0.4 : 1}>
                         {/* Floor slab */}
-                        <line
-                            x1={24}
-                            y1={top + FLOOR_HEIGHT}
-                            x2={VIEW.width - 24}
-                            y2={top + FLOOR_HEIGHT}
-                            stroke={INK_SOFT}
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                        />
+                        <line x1={BUILDING.x + STAIRS_WIDTH} y1={floorY} x2={WALL_RIGHT} y2={floorY} stroke={INK} strokeWidth="2" />
                         {/* Selected floor: soft band that pops on hover of "shell" */}
                         {isSelectedFloor && (
                             <rect
-                                x={24}
-                                y={top + 4}
-                                width={VIEW.width - 48}
-                                height={FLOOR_HEIGHT - 4}
-                                rx="6"
+                                x={BUILDING.x + STAIRS_WIDTH + 1}
+                                y={top + 2}
+                                width={WALL_RIGHT - BUILDING.x - STAIRS_WIDTH - 2}
+                                height={FLOOR_HEIGHT - 3}
                                 fill={ACCENT}
-                                fillOpacity={highlight === "floor" ? 0.16 : 0.06}
+                                fillOpacity={highlight === "floor" ? 0.18 : 0.07}
                                 {...hoverProps("floor")}
                             />
                         )}
+                        {/* Floor label outside the wall, with a tick to the slab */}
                         <g {...(isSelectedFloor ? hoverProps("floor") : {})}>
-                            <text x={30} y={top + 28} fontSize="13" fill={INK} fontWeight={isSelectedFloor ? 700 : 500}>
+                            <text x={24} y={top + FLOOR_HEIGHT / 2 + 1} fontSize="13" fill={INK} fontWeight={isSelectedFloor ? 700 : 500}>
                                 {`floor ${n}`}
                             </text>
-                            <text x={30} y={top + 46} fontSize="11" fill={INK_SOFT}>
+                            <text x={24} y={top + FLOOR_HEIGHT / 2 + 17} fontSize="11" fill={INK_SOFT}>
                                 {`shell n = ${n}`}
                             </text>
                         </g>
+                        {/* A window on the right wall per floor */}
+                        <rect x={WALL_RIGHT - 1} y={top + 22} width="6" height="22" fill="#FFFFFF" stroke={INK} strokeWidth="1.5" />
 
-                        {/* Floor-level view: electrons shown loose on the floor */}
+                        {/* Floor-level view: people standing about on the floor */}
                         {!showRooms &&
                             Array.from({ length: electronsOnFloor(n) }, (_, e) => (
-                                <circle key={e} cx={ROOM_X + 16 + e * 18} cy={top + FLOOR_HEIGHT - 18} r="5" fill={ACCENT} />
+                                <Electron key={e} x={ROOM_X + 16 + e * 22} y={floorY - 1} />
                             ))}
                         {!showRooms && electronsOnFloor(n) === 0 && (
-                            <text x={ROOM_X + 8} y={top + FLOOR_HEIGHT - 14} fontSize="11" fill={INK_FAINT}>
+                            <text x={ROOM_X + 8} y={floorY - 12} fontSize="11" fill={INK_FAINT}>
                                 empty so far
                             </text>
                         )}
 
-                        {/* Rooms */}
+                        {/* Rooms: partition walls with a name plate */}
                         {showRooms &&
                             roomsOnFloor(n).map((room, roomIndex) => {
                                 const x = roomX(n, roomIndex);
                                 const width = roomWidth(room);
                                 const isSelectedRoom = isSelectedFloor && room === selected.room;
-                                const y = top + 10;
-                                const height = FLOOR_HEIGHT - 16;
+                                const ceiling = top + 8;
                                 return (
                                     <g key={room} opacity={roomReveal} {...(isSelectedRoom ? hoverProps("room") : {})}>
                                         <rect
                                             x={x}
-                                            y={y}
+                                            y={ceiling}
                                             width={width}
-                                            height={height}
-                                            rx="6"
-                                            fill={isSelectedRoom ? ACCENT_SOFT : PAPER_TINT}
-                                            stroke={isSelectedRoom ? ACCENT : INK_FAINT}
+                                            height={floorY - ceiling}
+                                            fill={isSelectedRoom ? ACCENT_SOFT : "#FFFFFF"}
+                                            stroke={isSelectedRoom ? ACCENT : INK_SOFT}
                                             strokeWidth={isSelectedRoom ? (highlight === "room" ? 3.5 : 2.5) : 1.5}
                                         />
-                                        <text
-                                            x={x + ROOM_PAD}
-                                            y={y + 14}
-                                            fontSize="11"
-                                            fill={INK}
-                                            fontWeight={isSelectedRoom ? 700 : 500}
-                                        >
+                                        {/* door in the room's left wall (hidden once the desks are shown) */}
+                                        {!showDesks && (
+                                            <rect x={x + 3} y={floorY - 24} width="9" height="24" rx="1.5" fill={PAPER_TINT} stroke={INK_SOFT} strokeWidth="1" />
+                                        )}
+                                        {/* name plate above the door */}
+                                        <rect x={x + 3} y={ceiling + 4} width="24" height="14" rx="2" fill={isSelectedRoom ? INK : PAPER_TINT} stroke={INK_SOFT} strokeWidth="1" />
+                                        <text x={x + 15} y={ceiling + 14.5} textAnchor="middle" fontSize="10" fill={isSelectedRoom ? "#FFFFFF" : INK} fontWeight={700}>
                                             {`${n}${room}`}
                                         </text>
-                                        {/* Room-level view: electrons loose in the room */}
+                                        {/* Room-level view: people standing in the room */}
                                         {!showDesks &&
                                             Array.from({ length: electronsInRoom(n, room) }, (_, e) => (
-                                                <circle
-                                                    key={e}
-                                                    cx={x + ROOM_PAD + 8 + e * 14}
-                                                    cy={y + height - 14}
-                                                    r="4.5"
-                                                    fill={ACCENT}
-                                                />
+                                                <Electron key={e} x={x + 18 + e * 14} y={floorY - 1} />
                                             ))}
                                         {/* Desks */}
                                         {showDesks &&
@@ -197,35 +266,25 @@ function AddressBuildingDrawing() {
                                                 const desk = deskIndex + 1;
                                                 const key = deskKey(n, room, desk);
                                                 const dx = x + ROOM_PAD + deskIndex * (DESK + DESK_GAP);
-                                                const dy = y + height - DESK_HEIGHT - 6;
                                                 const isSelectedDesk = isSelectedRoom && desk === selected.desk;
-                                                const hovered = hoverDesk === key;
                                                 return (
-                                                    <g
-                                                        key={key}
-                                                        opacity={deskReveal}
-                                                        style={{ cursor: "pointer" }}
-                                                        onClick={() => setVar("addressDesk", key)}
-                                                        onPointerEnter={() => {
-                                                            setHoverDesk(key);
-                                                            if (isSelectedDesk) setVar("addressHighlight", "desk");
-                                                        }}
-                                                        onPointerLeave={() => {
-                                                            setHoverDesk(null);
-                                                            if (isSelectedDesk) setVar("addressHighlight", "");
-                                                        }}
-                                                    >
-                                                        <rect
+                                                    <g key={key} opacity={deskReveal}>
+                                                        <Desk
                                                             x={dx}
-                                                            y={dy}
-                                                            width={DESK}
-                                                            height={DESK_HEIGHT}
-                                                            rx="4"
-                                                            fill={isSelectedDesk || hovered ? ACCENT_SOFT : "#FFFFFF"}
-                                                            stroke={isSelectedDesk ? INK : INK_SOFT}
-                                                            strokeWidth={isSelectedDesk ? (highlight === "desk" ? 3.5 : 2.5) : 1.2}
+                                                            floorY={floorY - 1}
+                                                            count={SEATED[key] ?? 0}
+                                                            selected={isSelectedDesk}
+                                                            hovered={hoverDesk === key}
+                                                            onClick={() => setVar("addressDesk", key)}
+                                                            onEnter={() => {
+                                                                setHoverDesk(key);
+                                                                if (isSelectedDesk) setVar("addressHighlight", "desk");
+                                                            }}
+                                                            onLeave={() => {
+                                                                setHoverDesk(null);
+                                                                if (isSelectedDesk) setVar("addressHighlight", "");
+                                                            }}
                                                         />
-                                                        <ElectronDots cx={dx + DESK / 2} cy={dy + DESK_HEIGHT / 2} count={SEATED[key] ?? 0} />
                                                     </g>
                                                 );
                                             })}
@@ -246,8 +305,11 @@ function AddressBuildingDrawing() {
                     {showRooms && <tspan opacity={dim("room")} fontWeight={highlight === "room" ? 800 : 600}>{` → room ${selected.n}${selected.room}`}</tspan>}
                     {showDesks && <tspan opacity={dim("desk")} fontWeight={highlight === "desk" ? 800 : 600}>{` → desk ${selected.desk}`}</tspan>}
                 </text>
-                <text x={VIEW.width - 24} y={42} textAnchor="end" fontSize="11" fill={INK_FAINT}>
+                <text x={VIEW.width - 24} y={VIEW.height - 22} textAnchor="end" fontSize="11" fill={INK_FAINT}>
                     {showDesks ? "click any desk to read its address" : `${showRooms ? "desk" : "room"} level not shown yet`}
+                </text>
+                <text x={24} y={VIEW.height - 22} fontSize="11" fill={INK_SOFT}>
+                    electrons move in from the bottom and fill upwards
                 </text>
             </g>
         </svg>

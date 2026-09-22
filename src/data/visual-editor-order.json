@@ -48,6 +48,7 @@
     "writing-configurations-sulfur",
     "writing-configurations-builder-intro",
     "writing-configurations-builder",
+    "shells-capacity-squares",
     "writing-configurations-check",
     "writing-configurations-question"
   ],
@@ -587,6 +588,18 @@
       "columns": [
         [
           "writing-configurations-builder"
+        ]
+      ],
+      "props": {
+        "maxWidth": "xl"
+      }
+    },
+    {
+      "id": "editor-full-shells-capacity-squares",
+      "type": "stack",
+      "columns": [
+        [
+          "shells-capacity-squares"
         ]
       ],
       "props": {

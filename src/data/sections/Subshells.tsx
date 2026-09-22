@@ -15,7 +15,7 @@ import { Figure } from "@/components/molecules";
 import { useVar, useSetVar } from "@/stores";
 import { useSpring } from "@/lib/motion";
 import { getVariableInfo, choicePropsFromDefinition, togglePropsFromDefinition } from "../variables";
-import { ACCENT, ACCENT_SOFT, INK, INK_SOFT, INK_FAINT, PAPER_TINT, roomsOnFloor } from "./electronModel";
+import { ACCENT, ACCENT_SOFT, INK, INK_SOFT, INK_FAINT, PAPER_TINT, N_COLOR, roomsOnFloor } from "./electronModel";
 
 // ── Building layout ─────────────────────────────────────────────────────────
 const VIEW = { width: 560, height: 340 };
@@ -63,7 +63,8 @@ function Floor({ n, selected, onSelect }: { n: number; selected: boolean; onSele
                 {`floor ${n}`}
             </text>
             <text x={28} y={top + 40} fontSize="11" fill={INK_SOFT} style={{ fontVariantNumeric: "tabular-nums" }}>
-                {`n = ${n} · ${rooms.length} room${rooms.length === 1 ? "" : "s"}`}
+                <tspan fill={N_COLOR} fontWeight={600}>{`n = ${n}`}</tspan>
+                {` · ${rooms.length} room${rooms.length === 1 ? "" : "s"}`}
             </text>
 
             {rooms.map((room, index) => {
@@ -219,7 +220,7 @@ export const subshellsBlocks: ReactElement[] = [
         <Block id="subshells-count-rule" padding="sm">
             <EditableParagraph id="para-subshells-count-rule" blockId="subshells-count-rule">
                 Here is the rule that decides how many rooms a floor has: shell number{" "}
-                <InlineFormula latex="n" /> contains exactly <InlineFormula latex="n" />{" "}
+                <InlineFormula latex="\clr{n}{n}" colorMap={{ n: N_COLOR }} /> contains exactly <InlineFormula latex="\clr{n}{n}" colorMap={{ n: N_COLOR }} />{" "}
                 subshells. Click through the floors and count: floor{" "}
                 <InlineToggle
                     id="toggle-subshells-floor"

@@ -22,6 +22,7 @@ import {
     INK_SOFT,
     INK_FAINT,
     PAPER_TINT,
+    N_COLOR,
     ORBITALS_PER_ROOM,
     roomCapacity,
     type RoomLetter,
@@ -317,7 +318,7 @@ export const orbitalsBlocks: ReactElement[] = [
                 <InlineFormula latex="3s" /> plus <InlineFormula latex="3p" /> plus{" "}
                 <InlineFormula latex="3d" />, which is{" "}
                 <InlineFormula latex="2 + 6 + 10 = 18" /> electrons — exactly the{" "}
-                <InlineFormula latex="2n^2" /> answer for <InlineFormula latex="n = 3" />. The two
+                <InlineFormula latex="2\clr{n}{n}^2" colorMap={{ n: N_COLOR }} /> answer for <InlineFormula latex="\clr{n}{n} = \clr{n}{3}" colorMap={{ n: N_COLOR }} />. The two
                 rules agree because they are describing the same building.
             </EditableParagraph>
         </Block>

@@ -230,8 +230,8 @@ export const shellsBlocks: ReactElement[] = [
         <Block id="shells-definition" padding="sm">
             <EditableParagraph id="para-shells-definition" blockId="shells-definition">
                 A shell is one main energy level around the nucleus — one floor of our building.
-                Shells are numbered <InlineFormula latex="n = 1" />,{" "}
-                <InlineFormula latex="n = 2" />, <InlineFormula latex="n = 3" /> and so on,
+                Shells are numbered <InlineFormula latex="\clr{n}{n} = \clr{n}{1}" colorMap={{ n: N_COLOR }} />,{" "}
+                <InlineFormula latex="\clr{n}{n} = \clr{n}{2}" colorMap={{ n: N_COLOR }} />, <InlineFormula latex="\clr{n}{n} = \clr{n}{3}" colorMap={{ n: N_COLOR }} /> and so on,
                 starting from the floor closest to the nucleus. The bigger the number, the
                 further out the shell sits and the more energy an electron there has.
             </EditableParagraph>

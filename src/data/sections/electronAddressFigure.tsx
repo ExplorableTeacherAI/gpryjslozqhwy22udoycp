@@ -10,6 +10,7 @@ import {
     INK_SOFT,
     INK_FAINT,
     PAPER_TINT,
+    N_COLOR,
     ORBITALS_PER_ROOM,
     roomsOnFloor,
     type RoomLetter,
@@ -216,7 +217,7 @@ function AddressBuildingDrawing() {
                                 {`floor ${n}`}
                             </text>
                             <text x={24} y={top + FLOOR_HEIGHT / 2 + 17} fontSize="11" fill={INK_SOFT}>
-                                {`shell n = ${n}`}
+                                shell <tspan fill={N_COLOR} fontWeight={600}>{`n = ${n}`}</tspan>
                             </text>
                         </g>
                         {/* A window on the right wall per floor */}

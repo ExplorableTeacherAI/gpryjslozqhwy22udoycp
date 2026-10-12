@@ -116,8 +116,13 @@ const ExplorableView = () => {
         // overflow-x: clip, not hidden: `hidden` forces overflow-y to `auto`,
         // which turns <body> into a scroll container — an open dropdown then
         // shows a scrollbar and the height reports creep 1px per resize.
+        // overflow-y: clip as well: the chat sizes the frame to the content,
+        // so this document must never scroll on its own — a wheel over it
+        // used to scroll the document inside the frame and cut the figure
+        // off at the top (with no scrollbar to show why). Wheel events now
+        // chain out to the chat transcript or the side panel's box instead.
         style.textContent = `
-            html, body { background: transparent !important; overflow-x: clip; }
+            html, body { background: transparent !important; overflow-x: clip; overflow-y: clip; }
             body { min-height: 0 !important; }
             html, body { scrollbar-width: none; -ms-overflow-style: none; }
             html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }
@@ -130,7 +135,16 @@ const ExplorableView = () => {
             }
         `;
         document.head.appendChild(style);
-        return () => { style.remove(); };
+        // Belt and braces for engines that still let the viewport scroll
+        // programmatically: snap it back so the top of the figure stays put.
+        const resetScroll = () => {
+            if (window.scrollY !== 0 || window.scrollX !== 0) window.scrollTo(0, 0);
+        };
+        window.addEventListener("scroll", resetScroll);
+        return () => {
+            style.remove();
+            window.removeEventListener("scroll", resetScroll);
+        };
     }, [isEditor]);
 
     useEffect(() => {

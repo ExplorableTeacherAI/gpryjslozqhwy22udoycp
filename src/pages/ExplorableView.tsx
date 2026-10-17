@@ -1,5 +1,6 @@
 import { useActivityRecovery } from "@/lib/activityRecovery";
-import { useEffect, useRef, useState } from "react";
+import { findFigure, postFigureBox, startPointerTelemetry } from "@/lib/pointerTelemetry";
+import { lazy, Suspense, useEffect, useRef, useState, Children, isValidElement, useMemo, type ReactNode } from "react";
 import { BlockRenderer } from "@/components/templates";
 import { explorables } from "@/data/explorables";
 import { useAppMode } from "@/contexts/AppModeContext";
@@ -78,6 +79,18 @@ const highlightByColor = (root: HTMLElement, color: string, on: boolean) => {
     for (const svg of svgs) svg.setAttribute("data-chat-dim", "1");
 };
 
+// The teacher's block editor loads only in editor mode, so a student frame
+// never imports it (or anything it depends on) — see EditableExplorableBlocks.
+const EditableExplorableBlocks = lazy(() => import("./EditableExplorableBlocks"));
+
+/** Does this block tree contain a visualization block (`<Block hasVisualization>`)? */
+const containsVisualization = (node: ReactNode): boolean => {
+    if (!isValidElement(node)) return false;
+    const props = node.props as { hasVisualization?: boolean; children?: ReactNode };
+    if (props.hasVisualization === true) return true;
+    return Children.toArray(props.children).some(containsVisualization);
+};
+
 /**
  * ExplorableView — renders exactly one registered explorable, selected via
  * the `?explorable=<id>` URL query parameter (read before the hash, since
@@ -100,8 +113,36 @@ const ExplorableView = () => {
     const hydrated = useActivityRecovery(id, !isEditor && !!entry);
     const [dots, setDots] = useState("");
     const rootRef = useRef<HTMLDivElement>(null);
+    // Variables the chat just changed (set-value / select), so the interaction
+    // reporter can tag the resulting store change as chat-driven. Entries
+    // expire quickly in case the change never lands (same value, snapped).
+    const chatChangedRef = useRef<Map<string, number>>(new Map());
+    const markChatChange = (varName: string) => {
+        chatChangedRef.current.set(varName, Date.now() + 300);
+    };
     // null until known — so the chat is never told "no terms" before they load
     const [chatSpec, setChatSpec] = useState<ChatSpec | null>(null);
+    // Docked in the chat's side panel: the student keeps reading the chat
+    // beside the figure, so only the visualization blocks are shown there —
+    // the instruction paragraph and the question stay in the inline copy.
+    const [docked, setDocked] = useState(false);
+    useEffect(() => {
+        if (isEditor) return;
+        const handler = (event: MessageEvent) => {
+            const d = event.data;
+            if (d?.type === "mathvibe-explorable-dock" && d.explorableId === id) {
+                setDocked(d.docked === true);
+            }
+        };
+        window.addEventListener("message", handler);
+        return () => window.removeEventListener("message", handler);
+    }, [id, isEditor]);
+    const visibleBlocks = useMemo(() => {
+        const blocks = entry?.blocks ?? [];
+        if (!docked) return blocks;
+        const figures = blocks.filter(containsVisualization);
+        return figures.length > 0 ? figures : blocks;
+    }, [entry, docked]);
 
     // Embedded in the tutor chat, the explorable must read as part of the
     // chat, not a separate panel: clear the template's page background (the
@@ -235,6 +276,7 @@ const ExplorableView = () => {
             if (d.type === "mathvibe-explorable-set-value") {
                 const v = variables.find((x) => x.id === d.variableId);
                 if (!v?.settable || typeof d.value !== "number" || !Number.isFinite(d.value)) return;
+                markChatChange(v.varName);
                 store.setVariable(v.varName, snapToSettable(d.value, v.settable));
                 countInteraction();
                 return;
@@ -253,6 +295,7 @@ const ExplorableView = () => {
             } else {
                 saved.delete(d.varName); // a click is a deliberate choice — keep it
                 countInteraction();
+                markChatChange(d.varName);
             }
             store.setVariable(d.varName, d.value);
         };
@@ -342,6 +385,48 @@ const ExplorableView = () => {
         };
     }, [entry, id, hydrated]);
 
+    // Pointer telemetry for the teacher's dashboard: where the figure sits in
+    // this document (so a dwell overlay can be placed on a thumbnail) and how
+    // long the pointer lingered over each part of it. Students only.
+    useEffect(() => {
+        if (!entry || !id || !hydrated || isEditor || window.parent === window) return;
+        const root = rootRef.current;
+        if (!root) return;
+        let stop: (() => void) | undefined;
+        let observer: ResizeObserver | undefined;
+        const sendBox = () => {
+            try {
+                postFigureBox(id, findFigure(root));
+            } catch {
+                // best effort
+            }
+        };
+        try {
+            sendBox();
+            observer = new ResizeObserver(sendBox);
+            observer.observe(root);
+            window.addEventListener("resize", sendBox);
+            stop = startPointerTelemetry(root, id, () => {
+                try {
+                    return findFigure(root);
+                } catch {
+                    return null;
+                }
+            });
+        } catch {
+            // telemetry must never break the explorable
+        }
+        return () => {
+            observer?.disconnect();
+            window.removeEventListener("resize", sendBox);
+            try {
+                stop?.();
+            } catch {
+                // ignore
+            }
+        };
+    }, [entry, id, hydrated, isEditor]);
+
     // Report student interactions (variable changes: scrubs, answers, toggles)
     // to the embedding chat page, so the tutor can react without the student
     // having to retype what they did.
@@ -364,6 +449,10 @@ const ExplorableView = () => {
                     const isInternalState =
                         /_(explored|interacted|revealed)$/.test(name) || name === CHAT_INTERACTION_VAR;
                     if (isInternalState || highlightOnly.has(name)) continue;
+                    const now = Date.now();
+                    const chatUntil = chatChangedRef.current.get(name);
+                    const fromChat = chatUntil !== undefined && chatUntil >= now;
+                    chatChangedRef.current.delete(name);
                     window.parent.postMessage(
                         {
                             type: "mathvibe-explorable-interaction",
@@ -374,6 +463,10 @@ const ExplorableView = () => {
                             // Generic store changes are exploration. Assessed
                             // answers are reported explicitly by InlineFeedback.
                             interactionKind: "variable_change",
+                            at: now,
+                            // "chat": a set/select control in the chat caused
+                            // it; "iframe": the student did it in the figure.
+                            source: fromChat ? "chat" : "iframe",
                         },
                         "*"
                     );
@@ -399,12 +492,18 @@ const ExplorableView = () => {
 
     return (
         <div ref={rootRef} className={`relative ${isEditor ? "bg-white" : "bg-transparent"}`}>
-            <BlockRenderer
-                initialBlocks={entry.blocks}
-                isPreview={!isEditor}
-                hideLegend
-                embedded
-            />
+            {isEditor ? (
+                <Suspense fallback={null}>
+                    <EditableExplorableBlocks blocks={entry.blocks} />
+                </Suspense>
+            ) : (
+                <BlockRenderer
+                    initialBlocks={visibleBlocks}
+                    isPreview
+                    hideLegend
+                    embedded
+                />
+            )}
         </div>
     );
 };
